@@ -1,0 +1,7 @@
+homelab:
+  hosts:
+    fedora-homeserver:
+      ansible_host: 192.168.178.191
+      ansible_user: lena
+      ansible_connection: ssh
+      ansible_ssh_private_key: ~/.ssh/homeserver

@@ -1,0 +1,6 @@
+username: lena
+packages:
+  - nano
+  - btrfs-progs
+  - neofetch
+  - htop
