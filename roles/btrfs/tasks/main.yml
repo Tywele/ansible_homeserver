@@ -1,0 +1,66 @@
+# find the devices that don't have a boot partition and format them as btrfs devices, join them together as a raid device in btrfs and mount them at /mnt/siren
+
+- name: create btrfs filesystems
+  filesystem:
+    fstype: btrfs
+    dev: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ nvme_device }}"
+    - "{{ hdd_device1 }}"
+    - "{{ hdd_device2 }}"
+
+- name: create mount points
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ hdd_mount_point }}"
+    - "{{ nvme_mount_point }}"
+
+- name: mount {{ nvme_device }} to {{ nvme_mount_point }}
+  mount:
+    path: /mnt/nymph
+    src: "{{ nvme_device }}"
+    fstype: btrfs
+    state: mounted
+
+- name: mount {{ hdd_device1}} to {{ hdd_mount_point }}
+  mount:
+    path: /mnt/siren
+    src: "{{ hdd_device1 }}"
+    fstype: btrfs
+    state: mounted
+
+- name: ensure {{ hdd_device2 }} is not mounted
+  mount:
+    path: /mnt/siren
+    state: unmounted
+
+- name: add {{ hdd_device2 }} to BTRFS filesystem
+  command: btrfs device add {{ hdd_device2 }} /mnt/siren -f
+
+- name: create BTRFS raid for HDD devices
+  command: btrfs balance start -dconvert=raid1 -mconvert=raid1 /mnt/siren
+
+- name: get UUID of {{ nvme_device }}
+  command: blkid -s UUID -o value {{ nvme_device }}
+  register: command_output
+
+- name: add {{ nvme_device }} to /etc/fstab
+  lineinfile:
+    path: /etc/fstab
+    line: "UUID={{ command_output.stdout }} /mnt/nymph btrfs defaults,autodefrag 0 2"
+
+- name: get UUID of {{ hdd_device1 }}
+  command: blkid -s UUID -o value {{ hdd_device1 }}
+  register: command_output
+
+- name: add {{ hdd_device1 }} to /etc/fstab
+  lineinfile:
+    path: /etc/fstab
+    line: "UUID={{ command_output.stdout }} /mnt/siren btrfs defaults,autodefrag 0 2"
+
+# find the device with a boot partition and get the existing btrfs partition to create a subvolume for it that can be mounted at /mnt/nymph
+
+# ansible_devices has the facts about the different devices like /dev/sda, /dev/sdb and /dev/sdc

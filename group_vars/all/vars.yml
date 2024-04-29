@@ -4,3 +4,9 @@ packages:
   - btrfs-progs
   - neofetch
   - htop
+hostname: datacore
+nvme_device: /dev/sdb
+hdd_device1: /dev/sdc
+hdd_device2: /dev/sdd
+nvme_mount_point: /mnt/nymph
+hdd_mount_point: /mnt/siren

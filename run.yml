@@ -1,7 +1,9 @@
 ---
 
-- hosts: all
+- hosts: homelab
   become: yes
   tasks:
   roles: 
     - essentials
+    - btrfs
+    

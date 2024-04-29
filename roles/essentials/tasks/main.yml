@@ -1,3 +1,8 @@
+- name: set hostname
+  hostname:
+    name: "{{ hostname }}"
+  notify: restart sshd
+
 - name: update packages
   dnf:
     name: "*"
