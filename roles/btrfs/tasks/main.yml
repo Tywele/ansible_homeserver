@@ -1,5 +1,3 @@
-# find the devices that don't have a boot partition and format them as btrfs devices, join them together as a raid device in btrfs and mount them at /mnt/siren
-
 - name: create btrfs filesystems
   filesystem:
     fstype: btrfs
@@ -60,7 +58,3 @@
   lineinfile:
     path: /etc/fstab
     line: "UUID={{ command_output.stdout }} /mnt/siren btrfs defaults,autodefrag 0 2"
-
-# find the device with a boot partition and get the existing btrfs partition to create a subvolume for it that can be mounted at /mnt/nymph
-
-# ansible_devices has the facts about the different devices like /dev/sda, /dev/sdb and /dev/sdc
