@@ -8,6 +8,12 @@
     - "{{ hdd_device1 }}"
     - "{{ hdd_device2 }}"
 
+- name: ensure {{ hdd_device2 }} is not mounted
+  mount:
+    path: "{{ hdd_mount_point }}"
+    src: "{{ hdd_device2 }}"
+    state: absent
+
 - name: create mount points
   file:
     path: "{{ item }}"
@@ -29,11 +35,6 @@
     src: "{{ hdd_device1 }}"
     fstype: btrfs
     state: mounted
-
-- name: ensure {{ hdd_device2 }} is not mounted
-  mount:
-    path: "{{ hdd_mount_point }}"
-    state: unmounted
 
 - name: add {{ hdd_device2 }} to BTRFS filesystem
   command: btrfs device add {{ hdd_device2 }} {{ hdd_mount_point }} -f
