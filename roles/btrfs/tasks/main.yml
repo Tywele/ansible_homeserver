@@ -13,33 +13,33 @@
     path: "{{ item }}"
     state: directory
   with_items:
-    - "{{ hdd_mount_point }}"
     - "{{ nvme_mount_point }}"
+    - "{{ hdd_mount_point }}"
 
 - name: mount {{ nvme_device }} to {{ nvme_mount_point }}
   mount:
-    path: /mnt/nymph
+    path: "{{ nvme_mount_point }}"
     src: "{{ nvme_device }}"
     fstype: btrfs
     state: mounted
 
 - name: mount {{ hdd_device1}} to {{ hdd_mount_point }}
   mount:
-    path: /mnt/siren
+    path: "{{ hdd_mount_point }}"
     src: "{{ hdd_device1 }}"
     fstype: btrfs
     state: mounted
 
 - name: ensure {{ hdd_device2 }} is not mounted
   mount:
-    path: /mnt/siren
+    path: "{{ hdd_mount_point }}"
     state: unmounted
 
 - name: add {{ hdd_device2 }} to BTRFS filesystem
-  command: btrfs device add {{ hdd_device2 }} /mnt/siren -f
+  command: btrfs device add {{ hdd_device2 }} {{ hdd_mount_point }} -f
 
-- name: create BTRFS raid for HDD devices
-  command: btrfs balance start -dconvert=raid1 -mconvert=raid1 /mnt/siren
+- name: create BTRFS raid for {{ hdd_device1 }} and {{ hdd_device2 }}
+  command: btrfs balance start -dconvert=raid1 -mconvert=raid1 {{ hdd_mount_point }}
 
 - name: get UUID of {{ nvme_device }}
   command: blkid -s UUID -o value {{ nvme_device }}
@@ -48,7 +48,7 @@
 - name: add {{ nvme_device }} to /etc/fstab
   lineinfile:
     path: /etc/fstab
-    line: "UUID={{ command_output.stdout }} /mnt/nymph btrfs defaults,autodefrag 0 2"
+    line: "UUID={{ command_output.stdout }} {{ nvme_mount_point }} btrfs defaults,autodefrag 0 2"
 
 - name: get UUID of {{ hdd_device1 }}
   command: blkid -s UUID -o value {{ hdd_device1 }}
@@ -57,4 +57,4 @@
 - name: add {{ hdd_device1 }} to /etc/fstab
   lineinfile:
     path: /etc/fstab
-    line: "UUID={{ command_output.stdout }} /mnt/siren btrfs defaults,autodefrag 0 2"
+    line: "UUID={{ command_output.stdout }} {{ hdd_mount_point }} btrfs defaults,autodefrag 0 2"
