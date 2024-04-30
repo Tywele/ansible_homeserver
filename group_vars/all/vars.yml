@@ -1,14 +1,18 @@
+hostname: datacore
 username: lena
+
 packages:
   - nano
-  - btrfs-progs
   - neofetch
   - htop
-hostname: datacore
+  - dnf-plugins-core
+
 nvme_device: /dev/sdb
 hdd_device1: /dev/sdc
 hdd_device2: /dev/sdd
+
 nvme_mount_point: /mnt/nymph
 hdd_mount_point: /mnt/siren
+
 nvme_filesystem_label: apps
 hdd_filesystem_label: data

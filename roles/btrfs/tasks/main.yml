@@ -1,5 +1,5 @@
 - name: create btrfs filesystems
-  filesystem:
+  ansible.builtin.filesystem:
     fstype: btrfs
     dev: "{{ item }}"
     state: present
@@ -13,24 +13,24 @@
   register: btrfs_info
 
 - name: set facts for UUIDs from btrfs info
-  set_fact:
+  ansible.builtin.set_fact:
     nvme_uuid: "{{ btrfs_info.filesystems | selectattr('devices', 'contains', nvme_device) | map(attribute='uuid') | first }}"
     hdd1_uuid: "{{ btrfs_info.filesystems | selectattr('devices', 'contains', hdd_device1) | map(attribute='uuid') | first }}"
     hdd2_uuid: "{{ btrfs_info.filesystems | selectattr('devices', 'contains', hdd_device2) | map(attribute='uuid') | first }}"
 
 - name: set facts for labels from btrfs info
-  set_fact:
+  ansible.builtin.set_fact:
     has_label_nvme: "{{ btrfs_info.filesystems | selectattr('devices', 'contains', nvme_device) | map(attribute='label') | first }}"
     has_label_hdd1: "{{ btrfs_info.filesystems | selectattr('devices', 'contains', hdd_device1) | map(attribute='label') | first }}"
 
 - name: set facts for mounted state from ansible_mounts
-  set_fact:
-    is_mounted_nvme: "{{ ansible_mounts | selectattr('device', 'equalto', nvme_device) | map(attribute='device')}}"
-    is_mounted_hdd1: "{{ ansible_mounts | selectattr('device', 'equalto', hdd_device1) | map(attribute='device')}}"
-    is_mounted_hdd2: "{{ ansible_mounts | selectattr('device', 'equalto', hdd_device2) | map(attribute='device')}}"
+  ansible.builtin.set_fact:
+    is_mounted_nvme: "{{ ansible_mounts | selectattr('device', 'equalto', nvme_device) | map(attribute='device') }}"
+    is_mounted_hdd1: "{{ ansible_mounts | selectattr('device', 'equalto', hdd_device1) | map(attribute='device') }}"
+    is_mounted_hdd2: "{{ ansible_mounts | selectattr('device', 'equalto', hdd_device2) | map(attribute='device') }}"
 
 - name: mount {{ nvme_device }} to {{ nvme_mount_point }}
-  mount:
+  ansible.posix.mount:
     path: "{{ nvme_mount_point }}"
     src: "{{ nvme_device }}"
     fstype: btrfs
@@ -38,7 +38,7 @@
   when: is_mounted_nvme == []
 
 - name: mount {{ hdd_device1}} to {{ hdd_mount_point }}
-  mount:
+  ansible.posix.mount:
     path: "{{ hdd_mount_point }}"
     src: "{{ hdd_device1 }}"
     fstype: btrfs
@@ -46,29 +46,35 @@
   when: is_mounted_hdd1 == []
 
 - name: add {{ hdd_device2 }} to BTRFS filesystem
-  command: btrfs device add {{ hdd_device2 }} {{ hdd_mount_point }} -f
-  when: btrfs_info.filesystems | length > 3
+  ansible.builtin.command: btrfs device add {{ hdd_device2 }} {{ hdd_mount_point }} -f
+  when: btrfs_info.filesystems | selectattr('devices', 'contains', hdd_device1) | map(attribute='devices') | flatten | length == 1
+
+- name: ensure BTRFS raid for {{ hdd_device1 }} and {{ hdd_device2 }} is not yet created
+  ansible.builtin.shell: btrfs filesystem df {{ hdd_mount_point }} | grep RAID1
+  changed_when: false
+  failed_when: false
+  register: btrfs_df
 
 - name: create BTRFS raid for {{ hdd_device1 }} and {{ hdd_device2 }}
-  command: btrfs balance start -dconvert=raid1 -mconvert=raid1 {{ hdd_mount_point }}
-  when: btrfs_info.filesystems | length > 3
+  ansible.builtin.command: btrfs balance start -dconvert=raid1 -mconvert=raid1 {{ hdd_mount_point }}
+  when: btrfs_df.rc != 0
 
 - name: add label to {{ nvme_mount_point }}
-  command: btrfs filesystem label {{ nvme_mount_point }} {{ nvme_filesystem_label }}
+  ansible.builtin.command: btrfs filesystem label {{ nvme_mount_point }} {{ nvme_filesystem_label }}
   when: has_label_nvme == ""
 
 - name: add label to {{ hdd_mount_point }}
-  command: btrfs filesystem label {{ hdd_mount_point }} {{ hdd_filesystem_label }}
+  ansible.builtin.command: btrfs filesystem label {{ hdd_mount_point }} {{ hdd_filesystem_label }}
   when: has_label_hdd1 == ""
 
 - name: add {{ nvme_device }} to /etc/fstab
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/fstab
     regexp: "^{{ nvme_device }}"
     line: "UUID={{ nvme_uuid }} {{ nvme_mount_point }} btrfs defaults,autodefrag 0 2"
 
 - name: add {{ hdd_device1 }} to /etc/fstab
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/fstab
     regexp: "^{{ hdd_device1 }}"
     line: "UUID={{ hdd1_uuid }} {{ hdd_mount_point }} btrfs defaults,autodefrag 0 2"
