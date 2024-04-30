@@ -25,9 +25,9 @@
 
 - name: set facts for mounted state from ansible_mounts
   set_fact:
-    is_mounted_nvme: "{{ ansible_mounts | selectattr('device', 'equalto', nvme_device) }}"
-    is_mounted_hdd1: "{{ ansible_mounts | selectattr('device', 'equalto', hdd_device1) }}"
-    is_mounted_hdd2: "{{ ansible_mounts | selectattr('device', 'equalto', hdd_device2) }}"
+    is_mounted_nvme: "{{ ansible_mounts | selectattr('device', 'equalto', nvme_device) | map(attribute='device')}}"
+    is_mounted_hdd1: "{{ ansible_mounts | selectattr('device', 'equalto', hdd_device1) | map(attribute='device')}}"
+    is_mounted_hdd2: "{{ ansible_mounts | selectattr('device', 'equalto', hdd_device2) | map(attribute='device')}}"
 
 - name: mount {{ nvme_device }} to {{ nvme_mount_point }}
   mount:
@@ -35,7 +35,7 @@
     src: "{{ nvme_device }}"
     fstype: btrfs
     state: mounted
-  when: is_mounted_nvme is undefined
+  when: is_mounted_nvme == []
 
 - name: mount {{ hdd_device1}} to {{ hdd_mount_point }}
   mount:
@@ -43,7 +43,7 @@
     src: "{{ hdd_device1 }}"
     fstype: btrfs
     state: mounted
-  when: is_mounted_hdd1 is undefined
+  when: is_mounted_hdd1 == []
 
 - name: add {{ hdd_device2 }} to BTRFS filesystem
   command: btrfs device add {{ hdd_device2 }} {{ hdd_mount_point }} -f
