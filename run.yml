@@ -6,3 +6,4 @@
   roles: 
     - essentials
     - btrfs
+    - docker
