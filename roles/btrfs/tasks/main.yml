@@ -8,19 +8,26 @@
     - "{{ hdd_device1 }}"
     - "{{ hdd_device2 }}"
 
-- name: ensure {{ hdd_device2 }} is not mounted
-  mount:
-    path: "{{ hdd_mount_point }}"
-    src: "{{ hdd_device2 }}"
-    state: absent
+- name: get btrfs info
+  community.general.btrfs_info:
+  register: btrfs_info
 
-- name: create mount points
-  file:
-    path: "{{ item }}"
-    state: directory
-  with_items:
-    - "{{ nvme_mount_point }}"
-    - "{{ hdd_mount_point }}"
+- name: set facts for UUIDs from btrfs info
+  set_fact:
+    nvme_uuid: "{{ btrfs_info.filesystems | selectattr('devices', 'contains', nvme_device) | map(attribute='uuid') | first }}"
+    hdd1_uuid: "{{ btrfs_info.filesystems | selectattr('devices', 'contains', hdd_device1) | map(attribute='uuid') | first }}"
+    hdd2_uuid: "{{ btrfs_info.filesystems | selectattr('devices', 'contains', hdd_device2) | map(attribute='uuid') | first }}"
+
+- name: set facts for labels from btrfs info
+  set_fact:
+    has_label_nvme: "{{ btrfs_info.filesystems | selectattr('devices', 'contains', nvme_device) | map(attribute='label') | first }}"
+    has_label_hdd1: "{{ btrfs_info.filesystems | selectattr('devices', 'contains', hdd_device1) | map(attribute='label') | first }}"
+
+- name: set facts for mounted state from ansible_mounts
+  set_fact:
+    is_mounted_nvme: "{{ ansible_mounts | selectattr('device', 'equalto', nvme_device) }}"
+    is_mounted_hdd1: "{{ ansible_mounts | selectattr('device', 'equalto', hdd_device1) }}"
+    is_mounted_hdd2: "{{ ansible_mounts | selectattr('device', 'equalto', hdd_device2) }}"
 
 - name: mount {{ nvme_device }} to {{ nvme_mount_point }}
   mount:
@@ -28,6 +35,7 @@
     src: "{{ nvme_device }}"
     fstype: btrfs
     state: mounted
+  when: is_mounted_nvme is undefined
 
 - name: mount {{ hdd_device1}} to {{ hdd_mount_point }}
   mount:
@@ -35,27 +43,32 @@
     src: "{{ hdd_device1 }}"
     fstype: btrfs
     state: mounted
+  when: is_mounted_hdd1 is undefined
 
 - name: add {{ hdd_device2 }} to BTRFS filesystem
   command: btrfs device add {{ hdd_device2 }} {{ hdd_mount_point }} -f
+  when: btrfs_info.filesystems | length > 3
 
 - name: create BTRFS raid for {{ hdd_device1 }} and {{ hdd_device2 }}
   command: btrfs balance start -dconvert=raid1 -mconvert=raid1 {{ hdd_mount_point }}
+  when: btrfs_info.filesystems | length > 3
 
-- name: get UUID of {{ nvme_device }}
-  command: blkid -s UUID -o value {{ nvme_device }}
-  register: command_output
+- name: add label to {{ nvme_mount_point }}
+  command: btrfs filesystem label {{ nvme_mount_point }} {{ nvme_filesystem_label }}
+  when: has_label_nvme == ""
+
+- name: add label to {{ hdd_mount_point }}
+  command: btrfs filesystem label {{ hdd_mount_point }} {{ hdd_filesystem_label }}
+  when: has_label_hdd1 == ""
 
 - name: add {{ nvme_device }} to /etc/fstab
   lineinfile:
     path: /etc/fstab
-    line: "UUID={{ command_output.stdout }} {{ nvme_mount_point }} btrfs defaults,autodefrag 0 2"
-
-- name: get UUID of {{ hdd_device1 }}
-  command: blkid -s UUID -o value {{ hdd_device1 }}
-  register: command_output
+    regexp: "^{{ nvme_device }}"
+    line: "UUID={{ nvme_uuid }} {{ nvme_mount_point }} btrfs defaults,autodefrag 0 2"
 
 - name: add {{ hdd_device1 }} to /etc/fstab
   lineinfile:
     path: /etc/fstab
-    line: "UUID={{ command_output.stdout }} {{ hdd_mount_point }} btrfs defaults,autodefrag 0 2"
+    regexp: "^{{ hdd_device1 }}"
+    line: "UUID={{ hdd1_uuid }} {{ hdd_mount_point }} btrfs defaults,autodefrag 0 2"

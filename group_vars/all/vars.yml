@@ -10,3 +10,5 @@ hdd_device1: /dev/sdc
 hdd_device2: /dev/sdd
 nvme_mount_point: /mnt/nymph
 hdd_mount_point: /mnt/siren
+nvme_filesystem_label: apps
+hdd_filesystem_label: data
