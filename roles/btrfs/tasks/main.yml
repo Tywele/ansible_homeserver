@@ -49,7 +49,7 @@
   ansible.builtin.command: btrfs device add {{ hdd_device2 }} {{ hdd_mount_point }} -f
   when: btrfs_info.filesystems | selectattr('devices', 'contains', hdd_device1) | map(attribute='devices') | flatten | length == 1
 
-- name: ensure BTRFS raid for {{ hdd_device1 }} and {{ hdd_device2 }} is not yet created
+- name: check BTRFS raid status for {{ hdd_device1 }} and {{ hdd_device2 }}
   ansible.builtin.shell: btrfs filesystem df {{ hdd_mount_point }} | grep RAID1
   changed_when: false
   failed_when: false

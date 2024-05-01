@@ -28,3 +28,108 @@
     name: docker
     state: started
     enabled: yes
+
+- name: add BTRFS subvolume for Nginx Proxy Manager
+  community.general.btrfs_subvolume:
+    name: /nginx-proxy-manager
+    state: present
+    filesystem_label: "{{ nvme_filesystem_label }}"
+
+- name: deploy Nginx Proxy Manager
+  community.docker.docker_container:
+    name: nginx-proxy-manager
+    image: jc21/nginx-proxy-manager:latest
+    restart_policy: unless-stopped
+    volumes:
+      - "{{ nvme_mount_point }}/nginx-proxy-manager/data:/data"
+      - "{{ nvme_mount_point }}/nginx-proxy-manager/etc/letsencrypt:/etc/letsencrypt"
+    ports:
+      - "80:80"
+      - "81:81"
+      - "443:443"
+
+- name: add BTRFS subvolumes for Komga 
+  community.general.btrfs_subvolume:
+    name: /komga
+    state: present
+    filesystem_label: "{{ item }}"
+  with_items:
+    - "{{ nvme_filesystem_label }}"
+    - "{{ hdd_filesystem_label }}"
+
+- name: deploy Komga
+  community.docker.docker_container:
+    name: komga
+    image: gotson/komga:latest
+    restart_policy: unless-stopped
+    volumes:
+      - "{{ nvme_mount_point }}/komga/config:/config"
+      - "{{ hdd_mount_point }}/komga/data:/data"
+    ports:
+      - "25600:25600"
+    # user: "1000:1000"
+    env:
+      TZ: "Europe/Berlin"
+
+- name: add BTRFS subvolume for Syncthing
+  community.general.btrfs_subvolume:
+    name: /syncthing
+    state: present
+    filesystem_label: "{{ nvme_filesystem_label }}"
+
+- name: open Syncthing ports
+  ansible.builtin.firewalld:
+    port: 8384/tcp
+    permanent: yes
+    state: enabled
+    immediate: true
+
+- name: deploy Syncthing
+  community.docker.docker_container:
+    name: syncthing
+    image: syncthing/syncthing:latest
+    restart_policy: unless-stopped
+    volumes:
+      - "{{ nvme_mount_point }}/syncthing/st-sync:/var/syncthing"
+    # user: "1000:1000"
+    network_mode: host
+
+- name: add BTRFS subvolume for Actual Budget
+  community.general.btrfs_subvolume:
+    name: /actual-budget
+    state: present
+    filesystem_label: "{{ item }}"
+  with_items:
+    - "{{ nvme_filesystem_label }}"
+    - "{{ hdd_filesystem_label }}"
+
+- name: deploy Actual Budget
+  community.docker.docker_container:
+    name: actual-budget
+    image: actualbudget/actual-server:latest
+    restart_policy: unless-stopped
+    volumes:
+      - "{{ hdd_mount_point }}/actual-budget/data:/data"
+    ports:
+      - "5006:5006"
+
+- name: add BTRFS subvolume for Immich
+  community.general.btrfs_subvolume:
+    name: /immich
+    state: present
+    filesystem_label: "{{ item }}"
+  with_items:
+    - "{{ nvme_filesystem_label }}"
+    - "{{ hdd_filesystem_label }}"
+
+# - name: deploy Immich
+#   community.docker.docker_container:
+#     name: immich
+#     image: immich/immich:latest
+#     restart_policy: unless-stopped
+#     volumes:
+#       - "{{ hdd_mount_point }}/immich/data:/data"
+#     ports:
+#       - "5005:5005"
+#     env:
+#       TZ: "Europe/Berlin"

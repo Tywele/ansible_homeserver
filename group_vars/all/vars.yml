@@ -1,6 +1,9 @@
 hostname: datacore
 username: lena
 
+docker_group: artemis
+docker_user: artemis
+
 packages:
   - nano
   - neofetch
