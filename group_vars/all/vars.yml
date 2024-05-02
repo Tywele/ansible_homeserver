@@ -24,3 +24,8 @@ immich_postgres_db_hostname: immich-postgres
 immich_postgres_db_name: immich
 immich_postgres_db_user: postgres
 immich_postgres_db_password: postgres
+
+nextcloud_mariadb_root_password: root
+nextcloud_mariadb_db_name: nextcloud
+nextcloud_mariadb_db_user: nextcloud
+nextcloud_mariadb_db_password: nextcloud

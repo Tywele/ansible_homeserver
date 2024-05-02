@@ -81,7 +81,6 @@
       - "{{ hdd_mount_point }}/komga/data:/data"
     ports:
       - "25600:25600"
-    # user: "1000:1000"
     env:
       TZ: "Europe/Berlin"
 
@@ -105,7 +104,6 @@
     restart_policy: unless-stopped
     volumes:
       - "{{ nvme_mount_point }}/syncthing/st-sync:/var/syncthing"
-    # user: "1000:1000"
     network_mode: host
 
 - name: add btrfs subvolume for Actual Budget
@@ -220,31 +218,52 @@
       DB_HOSTNAME: immich-postgres
       REDIS_HOSTNAME: immich-redis
 
-# - name: add btrfs subvolumes for Nextcloud
-#   community.general.btrfs_subvolume:
-#     name: /nextcloud
-#     state: present
-#     filesystem_label: "{{ item }}"
-#   with_items:
-#     - "{{ nvme_filesystem_label }}"
-#     - "{{ hdd_filesystem_label }}"
+- name: add btrfs subvolumes for Nextcloud
+  community.general.btrfs_subvolume:
+    name: /nextcloud
+    state: present
+    filesystem_label: "{{ item }}"
+  with_items:
+    - "{{ nvme_filesystem_label }}"
+    - "{{ hdd_filesystem_label }}"
 
-# - name: deploy Nextcloud
-#   community.docker.docker_container:
-#     name: nextcloud
-#     image: nextcloud:latest
-#     restart_policy: unless-stopped
-#     volumes:
-#       - "{{ hdd_mount_point }}/nextcloud/data:/var/www/html/data"
-#       - "{{ hdd_mount_point }}/nextcloud/config:/var/www/html/config"
-#       - "{{ hdd_mount_point }}/nextcloud/apps:/var/www/html/custom_apps"
-#       - "{{ hdd_mount_point }}/nextcloud/themes:/var/www/html/themes"
-#     ports:
-#       - "8080:80"
-#     environment:
-#       - MYSQL_HOST=immich-postgres
-#       - MYSQL_DATABASE=nextcloud
-#       - MYSQL_USER=postgres
-#       - MYSQL_PASSWORD=postgres
-#     networks:
-#       - name: immich-network
+- name: create Nextcloud network
+  community.docker.docker_network:
+    name: nextcloud-network
+    state: present
+
+- name: deploy Nextcloud-MariaDB
+  community.docker.docker_container:
+    name: nextcloud-mariadb
+    image: mariadb:10.6
+    restart_policy: always
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --log-bin=binlog
+    volumes:
+      - "{{ nvme_mount_point }}/nextcloud/mariadb:/var/lib/mysql"
+    env:
+      MYSQL_ROOT_PASSWORD: "{{ nextcloud_mariadb_root_password }}"
+      MYSQL_DATABASE: "{{ nextcloud_mariadb_db_name }}"
+      MYSQL_USER: "{{ nextcloud_mariadb_db_user }}"
+      MYSQL_PASSWORD: "{{ nextcloud_mariadb_db_password }}"
+    networks: 
+      - name: nextcloud-network
+
+- name: deploy Nextcloud
+  community.docker.docker_container:
+    name: nextcloud
+    image: nextcloud:latest
+    restart_policy: always
+    volumes:
+      - "{{ nvme_mount_point }}/nextcloud/config:/var/www/html/config"
+      - "{{ nvme_mount_point }}/nextcloud/apps:/var/www/html/custom_apps"
+      - "{{ hdd_mount_point }}/nextcloud/data:/var/www/html/data"
+      - "{{ hdd_mount_point }}/nextcloud/themes:/var/www/html/themes"
+    ports:
+      - "8080:80"
+    env:
+      MYSQL_HOST: nextcloud-mariadb
+      MYSQL_DATABASE: "{{ nextcloud_mariadb_db_name }}"
+      MYSQL_USER: "{{ nextcloud_mariadb_db_user }}"
+      MYSQL_PASSWORD: "{{ nextcloud_mariadb_db_password }}"
+    networks:
+      - name: nextcloud-network
