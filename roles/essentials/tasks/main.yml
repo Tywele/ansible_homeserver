@@ -38,3 +38,4 @@
     name: "{{ docker_user }}"
     uid: 2000
     state: present
+    group: "{{ docker_group }}"

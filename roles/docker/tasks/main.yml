@@ -29,7 +29,21 @@
     state: started
     enabled: yes
 
-- name: add BTRFS subvolume for Nginx Proxy Manager
+- name: add btrfs subvolume for Watchtower
+  community.general.btrfs_subvolume:
+    name: /watchtower
+    state: present
+    filesystem_label: "{{ nvme_filesystem_label }}"
+
+- name: deploy Watchtower
+  community.docker.docker_container:
+    name: watchtower
+    image: containrrr/watchtower:latest
+    restart_policy: unless-stopped
+    volumes:
+      - "{{ nvme_mount_point }}/watchtower/var/run/docker.sock:/var/run/docker.sock"
+
+- name: add btrfs subvolume for Nginx Proxy Manager
   community.general.btrfs_subvolume:
     name: /nginx-proxy-manager
     state: present
@@ -48,7 +62,7 @@
       - "81:81"
       - "443:443"
 
-- name: add BTRFS subvolumes for Komga 
+- name: add btrfs subvolumes for Komga 
   community.general.btrfs_subvolume:
     name: /komga
     state: present
@@ -71,7 +85,7 @@
     env:
       TZ: "Europe/Berlin"
 
-- name: add BTRFS subvolume for Syncthing
+- name: add btrfs subvolume for Syncthing
   community.general.btrfs_subvolume:
     name: /syncthing
     state: present
@@ -94,7 +108,7 @@
     # user: "1000:1000"
     network_mode: host
 
-- name: add BTRFS subvolume for Actual Budget
+- name: add btrfs subvolume for Actual Budget
   community.general.btrfs_subvolume:
     name: /actual-budget
     state: present
@@ -113,7 +127,7 @@
     ports:
       - "5006:5006"
 
-- name: add BTRFS subvolume for Immich
+- name: add btrfs subvolume for Immich
   community.general.btrfs_subvolume:
     name: /immich
     state: present
@@ -122,14 +136,115 @@
     - "{{ nvme_filesystem_label }}"
     - "{{ hdd_filesystem_label }}"
 
-# - name: deploy Immich
+- name: create Immich network
+  community.docker.docker_network:
+    name: immich-network
+    state: present
+
+- name: deploy Immich-Redis
+  community.docker.docker_container:
+    name: immich-redis
+    image: registry.hub.docker.com/library/redis:6.2-alpine@sha256:84882e87b54734154586e5f8abd4dce69fe7311315e2fc6d67c29614c8de2672
+    restart_policy: always
+    networks: 
+      - name: immich-network
+
+- name: deploy Immich-Postgres
+  community.docker.docker_container:
+    name: immich-postgres
+    image: registry.hub.docker.com/tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
+    restart_policy: always
+    volumes:
+      - "{{ nvme_mount_point }}/immich/postgres:/var/lib/postgresql/data"
+    env:
+      POSTGRES_DB: "{{ immich_postgres_db_name }}"
+      POSTGRES_USER: "{{ immich_postgres_db_user }}"
+      POSTGRES_PASSWORD: "{{ immich_postgres_db_password }}"
+    networks: 
+      - name: immich-network
+
+- name: deploy Immich-Machine-Learning
+  community.docker.docker_container:
+    name: immich-machine-learning
+    image: ghcr.io/immich-app/immich-machine-learning:release
+    restart_policy: always
+    volumes:
+      - "{{ nvme_mount_point }}/immich/model-cache:/cache"
+    networks: 
+      - name: immich-network
+    env:
+      DB_DATABASE_NAME: "{{ immich_postgres_db_name }}"
+      DB_USERNAME: "{{ immich_postgres_db_user }}"
+      DB_PASSWORD: "{{ immich_postgres_db_password }}"
+      DB_DATA_LOCATION: "{{ nvme_mount_point }}/immich/postgres"
+      DB_HOSTNAME: immich-postgres
+      REDIS_HOSTNAME: immich-redis
+
+- name: deploy Immich-Microservices
+  community.docker.docker_container:
+    name: immich-microservices
+    image: ghcr.io/immich-app/immich-server:release
+    restart_policy: always
+    command: ['start.sh', 'microservices']
+    volumes:
+      - "{{ hdd_mount_point}}/immich/library:/usr/src/app/upload"
+      - /etc/localtime:/etc/localtime:ro
+    networks: 
+      - name: immich-network
+    env:
+      DB_DATABASE_NAME: "{{ immich_postgres_db_name }}"
+      DB_USERNAME: "{{ immich_postgres_db_user }}"
+      DB_PASSWORD: "{{ immich_postgres_db_password }}"
+      DB_DATA_LOCATION: "{{ nvme_mount_point }}/immich/postgres"
+      DB_HOSTNAME: immich-postgres
+      REDIS_HOSTNAME: immich-redis
+
+- name: deploy Immich-Server
+  community.docker.docker_container:
+    name: immich-server
+    image: ghcr.io/immich-app/immich-server:release
+    restart_policy: always
+    command: ['start.sh', 'immich']
+    volumes:
+      - "{{ hdd_mount_point}}/immich/library:/usr/src/app/upload"
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "2283:3001"
+    networks: 
+      - name: immich-network
+    env:
+      DB_DATABASE_NAME: "{{ immich_postgres_db_name }}"
+      DB_USERNAME: "{{ immich_postgres_db_user }}"
+      DB_PASSWORD: "{{ immich_postgres_db_password }}"
+      DB_DATA_LOCATION: "{{ nvme_mount_point }}/immich/postgres"
+      DB_HOSTNAME: immich-postgres
+      REDIS_HOSTNAME: immich-redis
+
+# - name: add btrfs subvolumes for Nextcloud
+#   community.general.btrfs_subvolume:
+#     name: /nextcloud
+#     state: present
+#     filesystem_label: "{{ item }}"
+#   with_items:
+#     - "{{ nvme_filesystem_label }}"
+#     - "{{ hdd_filesystem_label }}"
+
+# - name: deploy Nextcloud
 #   community.docker.docker_container:
-#     name: immich
-#     image: immich/immich:latest
+#     name: nextcloud
+#     image: nextcloud:latest
 #     restart_policy: unless-stopped
 #     volumes:
-#       - "{{ hdd_mount_point }}/immich/data:/data"
+#       - "{{ hdd_mount_point }}/nextcloud/data:/var/www/html/data"
+#       - "{{ hdd_mount_point }}/nextcloud/config:/var/www/html/config"
+#       - "{{ hdd_mount_point }}/nextcloud/apps:/var/www/html/custom_apps"
+#       - "{{ hdd_mount_point }}/nextcloud/themes:/var/www/html/themes"
 #     ports:
-#       - "5005:5005"
-#     env:
-#       TZ: "Europe/Berlin"
+#       - "8080:80"
+#     environment:
+#       - MYSQL_HOST=immich-postgres
+#       - MYSQL_DATABASE=nextcloud
+#       - MYSQL_USER=postgres
+#       - MYSQL_PASSWORD=postgres
+#     networks:
+#       - name: immich-network

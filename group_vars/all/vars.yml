@@ -19,3 +19,8 @@ hdd_mount_point: /mnt/siren
 
 nvme_filesystem_label: apps
 hdd_filesystem_label: data
+
+immich_postgres_db_hostname: immich-postgres
+immich_postgres_db_name: immich
+immich_postgres_db_user: postgres
+immich_postgres_db_password: postgres
