@@ -1,0 +1,53 @@
+- name: add btrfs subvolumes for Nextcloud
+  community.general.btrfs_subvolume:
+    name: /nextcloud
+    state: present
+    filesystem_label: "{{ item }}"
+  with_items:
+    - "{{ nvme_filesystem_label }}"
+    - "{{ hdd_filesystem_label }}"
+
+- name: create Nextcloud network
+  community.docker.docker_network:
+    name: nextcloud-network
+    state: present
+
+- name: deploy Nextcloud-MariaDB
+  community.docker.docker_container:
+    name: nextcloud-mariadb
+    image: mariadb:10.6
+    restart_policy: always
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --log-bin=binlog
+    volumes:
+      - "{{ nvme_mount_point }}/nextcloud/mariadb:/var/lib/mysql"
+    env:
+      MYSQL_ROOT_PASSWORD: "{{ nextcloud_mariadb_root_password }}"
+      MYSQL_DATABASE: "{{ nextcloud_mariadb_db_name }}"
+      MYSQL_USER: "{{ nextcloud_mariadb_db_user }}"
+      MYSQL_PASSWORD: "{{ nextcloud_mariadb_db_password }}"
+    networks: 
+      - name: nextcloud-network
+
+- name: deploy Nextcloud
+  community.docker.docker_container:
+    name: nextcloud
+    image: nextcloud:latest
+    restart_policy: always
+    volumes:
+      - "{{ nvme_mount_point }}/nextcloud/config:/var/www/html/config"
+      - "{{ nvme_mount_point }}/nextcloud/apps:/var/www/html/custom_apps"
+      - "{{ hdd_mount_point }}/nextcloud/data:/var/www/html/data"
+      - "{{ hdd_mount_point }}/nextcloud/themes:/var/www/html/themes"
+    ports:
+      - "8080:80"
+    env:
+      MYSQL_HOST: nextcloud-mariadb
+      MYSQL_DATABASE: "{{ nextcloud_mariadb_db_name }}"
+      MYSQL_USER: "{{ nextcloud_mariadb_db_user }}"
+      MYSQL_PASSWORD: "{{ nextcloud_mariadb_db_password }}"
+      NEXTCLOUD_TRUSTED_DOMAINS: datacore.network nextcloud.datacore.network
+      # any config.php variable can be overwritten with NC_*
+      NC_maintenance_window_start: "1"
+      NC_default_phone_region: "DE"
+    networks:
+      - name: nextcloud-network

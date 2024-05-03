@@ -1,0 +1,18 @@
+- name: add btrfs subvolume for Actual Budget
+  community.general.btrfs_subvolume:
+    name: /actual-budget
+    state: present
+    filesystem_label: "{{ item }}"
+  with_items:
+    - "{{ nvme_filesystem_label }}"
+    - "{{ hdd_filesystem_label }}"
+
+- name: deploy Actual Budget
+  community.docker.docker_container:
+    name: actual-budget
+    image: actualbudget/actual-server:latest
+    restart_policy: unless-stopped
+    volumes:
+      - "{{ hdd_mount_point }}/actual-budget/data:/data"
+    ports:
+      - "5006:5006"

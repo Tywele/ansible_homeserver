@@ -1,0 +1,25 @@
+- name: check if docker repository is already added
+  ansible.builtin.shell: dnf repolist -v | grep -q docker-ce-stable
+  register: docker_repo_check
+  changed_when: false
+  failed_when: false
+
+- name: add docker repository
+  ansible.builtin.command: dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+  when: docker_repo_check.rc != 0
+
+- name: install docker
+  ansible.builtin.dnf:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: latest
+
+- name: start docker service
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: yes

@@ -1,0 +1,92 @@
+- name: add btrfs subvolume for Immich
+  community.general.btrfs_subvolume:
+    name: /immich
+    state: present
+    filesystem_label: "{{ item }}"
+  with_items:
+    - "{{ nvme_filesystem_label }}"
+    - "{{ hdd_filesystem_label }}"
+
+- name: create Immich network
+  community.docker.docker_network:
+    name: immich-network
+    state: present
+
+- name: deploy Immich-Redis
+  community.docker.docker_container:
+    name: immich-redis
+    image: registry.hub.docker.com/library/redis:6.2-alpine@sha256:84882e87b54734154586e5f8abd4dce69fe7311315e2fc6d67c29614c8de2672
+    restart_policy: always
+    networks: 
+      - name: immich-network
+
+- name: deploy Immich-Postgres
+  community.docker.docker_container:
+    name: immich-postgres
+    image: registry.hub.docker.com/tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
+    restart_policy: always
+    volumes:
+      - "{{ nvme_mount_point }}/immich/postgres:/var/lib/postgresql/data"
+    env:
+      POSTGRES_DB: "{{ immich_postgres_db_name }}"
+      POSTGRES_USER: "{{ immich_postgres_db_user }}"
+      POSTGRES_PASSWORD: "{{ immich_postgres_db_password }}"
+    networks: 
+      - name: immich-network
+
+- name: deploy Immich-Machine-Learning
+  community.docker.docker_container:
+    name: immich-machine-learning
+    image: ghcr.io/immich-app/immich-machine-learning:release
+    restart_policy: always
+    volumes:
+      - "{{ nvme_mount_point }}/immich/model-cache:/cache"
+    networks: 
+      - name: immich-network
+    env:
+      DB_DATABASE_NAME: "{{ immich_postgres_db_name }}"
+      DB_USERNAME: "{{ immich_postgres_db_user }}"
+      DB_PASSWORD: "{{ immich_postgres_db_password }}"
+      DB_DATA_LOCATION: "{{ nvme_mount_point }}/immich/postgres"
+      DB_HOSTNAME: immich-postgres
+      REDIS_HOSTNAME: immich-redis
+
+- name: deploy Immich-Microservices
+  community.docker.docker_container:
+    name: immich-microservices
+    image: ghcr.io/immich-app/immich-server:release
+    restart_policy: always
+    command: ['start.sh', 'microservices']
+    volumes:
+      - "{{ hdd_mount_point}}/immich/library:/usr/src/app/upload"
+      - /etc/localtime:/etc/localtime:ro
+    networks: 
+      - name: immich-network
+    env:
+      DB_DATABASE_NAME: "{{ immich_postgres_db_name }}"
+      DB_USERNAME: "{{ immich_postgres_db_user }}"
+      DB_PASSWORD: "{{ immich_postgres_db_password }}"
+      DB_DATA_LOCATION: "{{ nvme_mount_point }}/immich/postgres"
+      DB_HOSTNAME: immich-postgres
+      REDIS_HOSTNAME: immich-redis
+
+- name: deploy Immich-Server
+  community.docker.docker_container:
+    name: immich-server
+    image: ghcr.io/immich-app/immich-server:release
+    restart_policy: always
+    command: ['start.sh', 'immich']
+    volumes:
+      - "{{ hdd_mount_point}}/immich/library:/usr/src/app/upload"
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "2283:3001"
+    networks: 
+      - name: immich-network
+    env:
+      DB_DATABASE_NAME: "{{ immich_postgres_db_name }}"
+      DB_USERNAME: "{{ immich_postgres_db_user }}"
+      DB_PASSWORD: "{{ immich_postgres_db_password }}"
+      DB_DATA_LOCATION: "{{ nvme_mount_point }}/immich/postgres"
+      DB_HOSTNAME: immich-postgres
+      REDIS_HOSTNAME: immich-redis

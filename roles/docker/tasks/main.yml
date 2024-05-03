@@ -1,269 +1,31 @@
-- name: check if docker repository is already added
-  ansible.builtin.shell: dnf repolist -v | grep -q docker-ce-stable
-  register: docker_repo_check
-  changed_when: false
-  failed_when: false
+- name: Docker
+  ansible.builtin.import_tasks:
+    file: install.yml
 
-- name: add docker repository
-  ansible.builtin.command: dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
-  when: docker_repo_check.rc != 0
+- name: Watchtower
+  ansible.builtin.import_tasks:
+    file: watchtower.yml
 
-- name: enable docker repository
-  community.general.dnf_config_manager:
-    name: docker-ce-stable
-    state: enabled
+- name: Nginx Proxy Manager
+  ansible.builtin.import_tasks:
+    file: npm.yml
 
-- name: install docker
-  ansible.builtin.dnf:
-    name:
-      - docker-ce
-      - docker-ce-cli
-      - containerd.io
-      - docker-buildx-plugin
-      - docker-compose-plugin
-    state: latest
+- name: Komga
+  ansible.builtin.import_tasks:
+    file: komga.yml
 
-- name: start docker service
-  ansible.builtin.service:
-    name: docker
-    state: started
-    enabled: yes
+- name: Syncthing
+  ansible.builtin.import_tasks:
+    file: syncthing.yml
 
-- name: add btrfs subvolume for Watchtower
-  community.general.btrfs_subvolume:
-    name: /watchtower
-    state: present
-    filesystem_label: "{{ nvme_filesystem_label }}"
+- name: Actual Budget
+  ansible.builtin.import_tasks:
+    file: actual.yml
 
-- name: deploy Watchtower
-  community.docker.docker_container:
-    name: watchtower
-    image: containrrr/watchtower:latest
-    restart_policy: unless-stopped
-    volumes:
-      - "{{ nvme_mount_point }}/watchtower/var/run/docker.sock:/var/run/docker.sock"
+- name: Immich
+  ansible.builtin.import_tasks:
+    file: immich.yml
 
-- name: add btrfs subvolume for Nginx Proxy Manager
-  community.general.btrfs_subvolume:
-    name: /nginx-proxy-manager
-    state: present
-    filesystem_label: "{{ nvme_filesystem_label }}"
-
-- name: deploy Nginx Proxy Manager
-  community.docker.docker_container:
-    name: nginx-proxy-manager
-    image: jc21/nginx-proxy-manager:latest
-    restart_policy: unless-stopped
-    volumes:
-      - "{{ nvme_mount_point }}/nginx-proxy-manager/data:/data"
-      - "{{ nvme_mount_point }}/nginx-proxy-manager/etc/letsencrypt:/etc/letsencrypt"
-    ports:
-      - "80:80"
-      - "81:81"
-      - "443:443"
-
-- name: add btrfs subvolumes for Komga 
-  community.general.btrfs_subvolume:
-    name: /komga
-    state: present
-    filesystem_label: "{{ item }}"
-  with_items:
-    - "{{ nvme_filesystem_label }}"
-    - "{{ hdd_filesystem_label }}"
-
-- name: deploy Komga
-  community.docker.docker_container:
-    name: komga
-    image: gotson/komga:latest
-    restart_policy: unless-stopped
-    volumes:
-      - "{{ nvme_mount_point }}/komga/config:/config"
-      - "{{ hdd_mount_point }}/komga/data:/data"
-    ports:
-      - "25600:25600"
-    env:
-      TZ: "Europe/Berlin"
-
-- name: add btrfs subvolume for Syncthing
-  community.general.btrfs_subvolume:
-    name: /syncthing
-    state: present
-    filesystem_label: "{{ nvme_filesystem_label }}"
-
-- name: open Syncthing ports
-  ansible.builtin.firewalld:
-    port: 8384/tcp
-    permanent: yes
-    state: enabled
-    immediate: true
-
-- name: deploy Syncthing
-  community.docker.docker_container:
-    name: syncthing
-    image: syncthing/syncthing:latest
-    restart_policy: unless-stopped
-    volumes:
-      - "{{ nvme_mount_point }}/syncthing/st-sync:/var/syncthing"
-    network_mode: host
-
-- name: add btrfs subvolume for Actual Budget
-  community.general.btrfs_subvolume:
-    name: /actual-budget
-    state: present
-    filesystem_label: "{{ item }}"
-  with_items:
-    - "{{ nvme_filesystem_label }}"
-    - "{{ hdd_filesystem_label }}"
-
-- name: deploy Actual Budget
-  community.docker.docker_container:
-    name: actual-budget
-    image: actualbudget/actual-server:latest
-    restart_policy: unless-stopped
-    volumes:
-      - "{{ hdd_mount_point }}/actual-budget/data:/data"
-    ports:
-      - "5006:5006"
-
-- name: add btrfs subvolume for Immich
-  community.general.btrfs_subvolume:
-    name: /immich
-    state: present
-    filesystem_label: "{{ item }}"
-  with_items:
-    - "{{ nvme_filesystem_label }}"
-    - "{{ hdd_filesystem_label }}"
-
-- name: create Immich network
-  community.docker.docker_network:
-    name: immich-network
-    state: present
-
-- name: deploy Immich-Redis
-  community.docker.docker_container:
-    name: immich-redis
-    image: registry.hub.docker.com/library/redis:6.2-alpine@sha256:84882e87b54734154586e5f8abd4dce69fe7311315e2fc6d67c29614c8de2672
-    restart_policy: always
-    networks: 
-      - name: immich-network
-
-- name: deploy Immich-Postgres
-  community.docker.docker_container:
-    name: immich-postgres
-    image: registry.hub.docker.com/tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
-    restart_policy: always
-    volumes:
-      - "{{ nvme_mount_point }}/immich/postgres:/var/lib/postgresql/data"
-    env:
-      POSTGRES_DB: "{{ immich_postgres_db_name }}"
-      POSTGRES_USER: "{{ immich_postgres_db_user }}"
-      POSTGRES_PASSWORD: "{{ immich_postgres_db_password }}"
-    networks: 
-      - name: immich-network
-
-- name: deploy Immich-Machine-Learning
-  community.docker.docker_container:
-    name: immich-machine-learning
-    image: ghcr.io/immich-app/immich-machine-learning:release
-    restart_policy: always
-    volumes:
-      - "{{ nvme_mount_point }}/immich/model-cache:/cache"
-    networks: 
-      - name: immich-network
-    env:
-      DB_DATABASE_NAME: "{{ immich_postgres_db_name }}"
-      DB_USERNAME: "{{ immich_postgres_db_user }}"
-      DB_PASSWORD: "{{ immich_postgres_db_password }}"
-      DB_DATA_LOCATION: "{{ nvme_mount_point }}/immich/postgres"
-      DB_HOSTNAME: immich-postgres
-      REDIS_HOSTNAME: immich-redis
-
-- name: deploy Immich-Microservices
-  community.docker.docker_container:
-    name: immich-microservices
-    image: ghcr.io/immich-app/immich-server:release
-    restart_policy: always
-    command: ['start.sh', 'microservices']
-    volumes:
-      - "{{ hdd_mount_point}}/immich/library:/usr/src/app/upload"
-      - /etc/localtime:/etc/localtime:ro
-    networks: 
-      - name: immich-network
-    env:
-      DB_DATABASE_NAME: "{{ immich_postgres_db_name }}"
-      DB_USERNAME: "{{ immich_postgres_db_user }}"
-      DB_PASSWORD: "{{ immich_postgres_db_password }}"
-      DB_DATA_LOCATION: "{{ nvme_mount_point }}/immich/postgres"
-      DB_HOSTNAME: immich-postgres
-      REDIS_HOSTNAME: immich-redis
-
-- name: deploy Immich-Server
-  community.docker.docker_container:
-    name: immich-server
-    image: ghcr.io/immich-app/immich-server:release
-    restart_policy: always
-    command: ['start.sh', 'immich']
-    volumes:
-      - "{{ hdd_mount_point}}/immich/library:/usr/src/app/upload"
-      - /etc/localtime:/etc/localtime:ro
-    ports:
-      - "2283:3001"
-    networks: 
-      - name: immich-network
-    env:
-      DB_DATABASE_NAME: "{{ immich_postgres_db_name }}"
-      DB_USERNAME: "{{ immich_postgres_db_user }}"
-      DB_PASSWORD: "{{ immich_postgres_db_password }}"
-      DB_DATA_LOCATION: "{{ nvme_mount_point }}/immich/postgres"
-      DB_HOSTNAME: immich-postgres
-      REDIS_HOSTNAME: immich-redis
-
-- name: add btrfs subvolumes for Nextcloud
-  community.general.btrfs_subvolume:
-    name: /nextcloud
-    state: present
-    filesystem_label: "{{ item }}"
-  with_items:
-    - "{{ nvme_filesystem_label }}"
-    - "{{ hdd_filesystem_label }}"
-
-- name: create Nextcloud network
-  community.docker.docker_network:
-    name: nextcloud-network
-    state: present
-
-- name: deploy Nextcloud-MariaDB
-  community.docker.docker_container:
-    name: nextcloud-mariadb
-    image: mariadb:10.6
-    restart_policy: always
-    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --log-bin=binlog
-    volumes:
-      - "{{ nvme_mount_point }}/nextcloud/mariadb:/var/lib/mysql"
-    env:
-      MYSQL_ROOT_PASSWORD: "{{ nextcloud_mariadb_root_password }}"
-      MYSQL_DATABASE: "{{ nextcloud_mariadb_db_name }}"
-      MYSQL_USER: "{{ nextcloud_mariadb_db_user }}"
-      MYSQL_PASSWORD: "{{ nextcloud_mariadb_db_password }}"
-    networks: 
-      - name: nextcloud-network
-
-- name: deploy Nextcloud
-  community.docker.docker_container:
-    name: nextcloud
-    image: nextcloud:latest
-    restart_policy: always
-    volumes:
-      - "{{ nvme_mount_point }}/nextcloud/config:/var/www/html/config"
-      - "{{ nvme_mount_point }}/nextcloud/apps:/var/www/html/custom_apps"
-      - "{{ hdd_mount_point }}/nextcloud/data:/var/www/html/data"
-      - "{{ hdd_mount_point }}/nextcloud/themes:/var/www/html/themes"
-    ports:
-      - "8080:80"
-    env:
-      MYSQL_HOST: nextcloud-mariadb
-      MYSQL_DATABASE: "{{ nextcloud_mariadb_db_name }}"
-      MYSQL_USER: "{{ nextcloud_mariadb_db_user }}"
-      MYSQL_PASSWORD: "{{ nextcloud_mariadb_db_password }}"
-    networks:
-      - name: nextcloud-network
+- name: Nextcloud
+  ansible.builtin.import_tasks:
+    file: nextcloud.yml

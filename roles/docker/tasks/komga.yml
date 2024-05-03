@@ -1,0 +1,21 @@
+- name: add btrfs subvolumes for Komga 
+  community.general.btrfs_subvolume:
+    name: /komga
+    state: present
+    filesystem_label: "{{ item }}"
+  with_items:
+    - "{{ nvme_filesystem_label }}"
+    - "{{ hdd_filesystem_label }}"
+
+- name: deploy Komga
+  community.docker.docker_container:
+    name: komga
+    image: gotson/komga:latest
+    restart_policy: unless-stopped
+    volumes:
+      - "{{ nvme_mount_point }}/komga/config:/config"
+      - "{{ hdd_mount_point }}/komga/data:/data"
+    ports:
+      - "25600:25600"
+    env:
+      TZ: "Europe/Berlin"

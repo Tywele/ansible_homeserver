@@ -1,0 +1,13 @@
+- name: add btrfs subvolume for Watchtower
+  community.general.btrfs_subvolume:
+    name: /watchtower
+    state: present
+    filesystem_label: "{{ nvme_filesystem_label }}"
+
+- name: deploy Watchtower
+  community.docker.docker_container:
+    name: watchtower
+    image: containrrr/watchtower:latest
+    restart_policy: unless-stopped
+    volumes:
+      - "{{ nvme_mount_point }}/watchtower/var/run/docker.sock:/var/run/docker.sock"
