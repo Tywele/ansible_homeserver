@@ -7,4 +7,4 @@
       - /var/run/docker.sock:/var/run/docker.sock:ro
     env:
       WATCHTOWER_NOTIFICATION_REPORT: "true"
-      WATCHTOWER_NOTIFICATION_URL: discord://lcjWrqWS-F7FHYyZR-WVN9a-IB8_SW22oaoGw0e2VX1oE2ErA4-vRQ6_pp7KX-jdCLZF@1236277559218405449
+      WATCHTOWER_NOTIFICATION_URL: "{{ watchtower_notification_url }}"
