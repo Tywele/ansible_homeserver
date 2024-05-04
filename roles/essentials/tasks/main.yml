@@ -12,6 +12,19 @@
     name: "{{ packages }}"
     state: latest
 
+- name: check for core package updates
+  ansible.builtin.command: dnf needs-restarting -r
+  register: needs_restarting
+  failed_when: false
+  changed_when: false
+
+- name: reboot
+  ansible.builtin.reboot:
+    reboot_timeout: 600
+    connect_timeout: 600
+    msg: "rebooting to apply core package updates"
+  when: needs_restarting.rc != 0
+
 - name: disable SSH password auth
   ansible.builtin.lineinfile:
     dest: /etc/ssh/sshd_config
@@ -26,16 +39,3 @@
     line: "{{ username }} ALL=(ALL) NOPASSWD: ALL"
     validate: "/usr/sbin/visudo -cf %s"
   notify: restart sshd
-
-- name: create docker group
-  ansible.builtin.group:
-    name: "{{ docker_group }}"
-    gid: 2000
-    state: present
-
-- name: create docker user
-  ansible.builtin.user:
-    name: "{{ docker_user }}"
-    uid: 2000
-    state: present
-    group: "{{ docker_group }}"

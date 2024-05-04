@@ -1,0 +1,16 @@
+- name: add btrfs subvolume for Uptime Kuma
+  community.general.btrfs_subvolume:
+    name: /uptime-kuma
+    state: present
+    filesystem_label: "{{ nvme_filesystem_label }}"
+
+- name: deploy Uptime Kuma
+  community.docker.docker_container:
+    name: uptime-kuma
+    image: louislam/uptime-kuma:latest
+    restart_policy: always
+    volumes:
+      - "{{ nvme_mount_point }}/uptime-kuma:/app/data"
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "3001:3001"

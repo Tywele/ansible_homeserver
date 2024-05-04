@@ -1,13 +1,12 @@
 hostname: datacore
 
-docker_group: artemis
-docker_user: artemis
-
 packages:
   - nano
   - neofetch
   - htop
   - dnf-plugins-core
+  - smartmontools
+  - rsync
 
 nvme_device: /dev/sdb
 hdd_device1: /dev/sdc

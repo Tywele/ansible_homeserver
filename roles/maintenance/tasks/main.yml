@@ -1,0 +1,33 @@
+- name: create short smart test cron jobs
+  ansible.builtin.cron:
+    name: "smart test short {{ item }}"
+    special_time: "daily"
+    job: "smartctl -t short {{ item }}"
+    state: present
+    user: "{{ username }}"
+  with_items:
+    - "{{ nvme_device }}"
+    - "{{ hdd_device1 }}"
+    - "{{ hdd_device2 }}"
+
+- name: create long smart test cron jobs
+  ansible.builtin.cron:
+    name: "smart test long {{ item }}"
+    special_time: "weekly"
+    job: "smartctl -t long {{ item }}"
+    state: present
+    user: "{{ username }}"
+  with_items:
+    - "{{ nvme_device }}"
+    - "{{ hdd_device1 }}"
+    - "{{ hdd_device2 }}"
+
+# daily btrfs snapshots
+# - name: create daily btrfs snapshots
+#   ansible.builtin.cron:
+#     name: "btrfs snapshot daily"
+#     special_time: "daily"
+#     job: "btrfs subvolume snapshot -r / {{ btrfs_mount_point }}/daily-$(date +\"%Y-%m-%d\")"
+#     state: present
+
+# weekly rsyncs of immich, komga, nextcloud, syncthing and actual-budget volumes to storage box

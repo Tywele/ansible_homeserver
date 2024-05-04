@@ -29,3 +29,7 @@
 - name: Nextcloud
   ansible.builtin.import_tasks:
     file: nextcloud.yml
+
+- name: Uptime Kuma
+  ansible.builtin.import_tasks:
+    file: uptime.yml
