@@ -1,0 +1,23 @@
+- resources:
+    label: System
+    cpu: true
+    memory: true
+    cputemp: true
+    units: metric
+    expanded: true
+
+- resources:
+    label: Storage
+    disk: 
+      - /
+      - /mnt/nymph
+      - /mnt/siren
+    expanded: true
+    diskUnits: bbytes
+
+- search:
+      provider: custom
+      url: https://www.ecosia.org/search?q=
+      target: _blank
+      focus: true
+      showSearchSuggestions: true

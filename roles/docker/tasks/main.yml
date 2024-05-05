@@ -33,3 +33,7 @@
 - name: Uptime Kuma
   ansible.builtin.import_tasks:
     file: uptime.yml
+    
+- name: Homepage
+  ansible.builtin.import_tasks:
+    file: homepage.yml

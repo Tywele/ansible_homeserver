@@ -1,0 +1,6 @@
+providers:
+  openweathermap: openweathermapapikey
+  weatherapi: weatherapikey
+
+title: Datacore
+hideVersion: true

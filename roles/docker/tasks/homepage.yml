@@ -1,0 +1,58 @@
+- name: add btrfs subvolume for Homepage
+  community.general.btrfs_subvolume:
+    name: /homepage
+    state: present
+    filesystem_label: "{{ nvme_filesystem_label }}"
+
+- name: deploy Homepage
+  community.docker.docker_container:
+    name: homepage
+    image: ghcr.io/gethomepage/homepage:latest
+    restart_policy: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - "{{ nvme_mount_point }}:{{ nvme_mount_point }}"
+      - "{{ hdd_mount_point }}:{{ hdd_mount_point }}"
+      - "{{ nvme_mount_point }}/homepage/config:/app/config"
+
+- name: copy custom.js for Homepage
+  ansible.builtin.copy:
+    src: homepage_custom.js
+    dest: "{{ nvme_mount_point }}/homepage/config/custom.js"
+    owner: root
+    group: root
+    mode: 0755
+
+- name: copy settings.yaml for Homepage
+  ansible.builtin.copy:
+    src: homepage_settings.yaml
+    dest: "{{ nvme_mount_point }}/homepage/config/settings.yaml"
+    owner: root
+    group: root
+    mode: 0755
+
+- name: copy services.yaml for Homepage
+  ansible.builtin.copy:
+    src: homepage_services.yaml
+    dest: "{{ nvme_mount_point }}/homepage/config/services.yaml"
+    owner: root
+    group: root
+    mode: 0755
+
+- name: copy bookmarks.yaml for Homepage
+  ansible.builtin.copy:
+    src: homepage_bookmarks.yaml
+    dest: "{{ nvme_mount_point }}/homepage/config/bookmarks.yaml"
+    owner: root
+    group: root
+    mode: 0755
+
+- name: copy widgets.yaml for Homepage
+  ansible.builtin.copy:
+    src: homepage_widgets.yaml
+    dest: "{{ nvme_mount_point }}/homepage/config/widgets.yaml"
+    owner: root
+    group: root
+    mode: 0755

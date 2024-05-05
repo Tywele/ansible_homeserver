@@ -1,0 +1,14 @@
+- My First Group:
+  - My First Service:
+      href: http://localhost/
+      description: My first service
+
+- My Second Group:
+  - My Second Service:
+      href: http://localhost/
+      description: My second service
+
+- My Third Group:
+  - My Third Service:
+      href: http://localhost/
+      description: My third service
