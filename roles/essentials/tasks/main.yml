@@ -39,3 +39,11 @@
     line: "{{ username }} ALL=(ALL) NOPASSWD: ALL"
     validate: "/usr/sbin/visudo -cf %s"
   notify: restart sshd
+
+- name: add message of the day script
+  ansible.builtin.copy:
+    src: motd.sh
+    dest: /etc/profile.d/motd.sh
+    owner: root
+    group: root
+    mode: 0755

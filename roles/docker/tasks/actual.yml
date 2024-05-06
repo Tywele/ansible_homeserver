@@ -1,4 +1,4 @@
-- name: add btrfs subvolume for Actual Budget
+- name: add btrfs subvolumes for Actual Budget
   community.general.btrfs_subvolume:
     name: /actual-budget
     state: present

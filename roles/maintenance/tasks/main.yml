@@ -1,6 +1,6 @@
-- name: create short smart test cron jobs
+- name: create job for short SMART test
   ansible.builtin.cron:
-    name: "smart test short {{ item }}"
+    name: "daily SMART test short {{ item }}"
     special_time: "daily"
     job: "smartctl -t short {{ item }}"
     state: present
@@ -10,9 +10,9 @@
     - "{{ hdd_device1 }}"
     - "{{ hdd_device2 }}"
 
-- name: create long smart test cron jobs
+- name: create job for long SMART test
   ansible.builtin.cron:
-    name: "smart test long {{ item }}"
+    name: "weekly SMART test long {{ item }}"
     special_time: "weekly"
     job: "smartctl -t long {{ item }}"
     state: present
@@ -22,12 +22,41 @@
     - "{{ hdd_device1 }}"
     - "{{ hdd_device2 }}"
 
-# daily btrfs snapshots
-# - name: create daily btrfs snapshots
-#   ansible.builtin.cron:
-#     name: "btrfs snapshot daily"
-#     special_time: "daily"
-#     job: "btrfs subvolume snapshot -r / {{ btrfs_mount_point }}/daily-$(date +\"%Y-%m-%d\")"
-#     state: present
+- name: add btrfs subvolumes for snapshots
+  community.general.btrfs_subvolume:
+    name: /snapshots
+    state: present
+    filesystem_label: "{{ item }}"
+  with_items:
+    - "{{ nvme_filesystem_label }}"
+    - "{{ hdd_filesystem_label }}"
+
+- name: create job for daily btrfs snapshots of apps
+  ansible.builtin.cron:
+    name: "daily btrfs snapshot of apps"
+    special_time: "daily"
+    job: "btrfs subvolume snapshot -r {{ nvme_mount_point }} {{ nvme_mount_point }}/snapshots/apps-$(date +\"%Y-%m-%d\")"
+    state: present
+
+- name: create job daily btrfs snapshots of data
+  ansible.builtin.cron:
+    name: "daily btrfs snapshot of data"
+    special_time: "daily"
+    job: "btrfs subvolume snapshot -r {{ hdd_mount_point }} {{ hdd_mount_point }}/snapshots/data-$(date +\"%Y-%m-%d\")"
+    state: present
+
+- name: create job for deleting snapshots of apps older than 30 days
+  ansible.builtin.cron:
+    name: "daily cleanup of old snapshots for apps (> 30 days)"
+    special_time: "daily"
+    job: "find {{ nvme_mount_point }}/snapshots -maxdepth 1 -mindepth 1 -type d -mtime +30 -exec btrfs subvolume delete {} \\;"
+    state: present
+
+- name: create job for deleting snapshots of data older than 30 days
+  ansible.builtin.cron:
+    name: "daily cleanup of old snapshots for data (> 30 days)"
+    special_time: "daily"
+    job: "find {{ hdd_mount_point }}/snapshots -maxdepth 1 -mindepth 1 -type d -mtime +30 -exec btrfs subvolume delete {} \\;"
+    state: present
 
 # weekly rsyncs of immich, komga, nextcloud, syncthing and actual-budget volumes to storage box

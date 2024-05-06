@@ -1,4 +1,4 @@
-- name: add btrfs subvolume for Immich
+- name: add btrfs subvolumes for Immich
   community.general.btrfs_subvolume:
     name: /immich
     state: present

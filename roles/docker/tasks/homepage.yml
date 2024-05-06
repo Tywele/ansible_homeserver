@@ -34,8 +34,8 @@
     mode: 0755
 
 - name: copy services.yaml for Homepage
-  ansible.builtin.copy:
-    src: homepage_services.yaml
+  ansible.builtin.template:
+    src: homepage_services.j2
     dest: "{{ nvme_mount_point }}/homepage/config/services.yaml"
     owner: root
     group: root
@@ -50,8 +50,8 @@
     mode: 0755
 
 - name: copy widgets.yaml for Homepage
-  ansible.builtin.copy:
-    src: homepage_widgets.yaml
+  ansible.builtin.template:
+    src: homepage_widgets.j2
     dest: "{{ nvme_mount_point }}/homepage/config/widgets.yaml"
     owner: root
     group: root

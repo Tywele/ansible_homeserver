@@ -10,8 +10,8 @@
     label: Storage
     disk: 
       - /
-      - /mnt/nymph
-      - /mnt/siren
+      - "{{ nvme_mount_point }}"
+      - "{{ hdd_mount_point }}"
     expanded: true
     diskUnits: bbytes
 

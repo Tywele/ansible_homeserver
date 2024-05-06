@@ -1,16 +1,54 @@
 ---
-- Developer:
-  - Github:
-    - abbr: GH
-      href: https://github.com/
-
-- Social:
+- Bookmarks:
+  - Photon:
+    - abbr: PH
+      href: https://p.lemmy.dbzer0.com/
+      icon: https://raw.githubusercontent.com/Xyphyn/photon/main/static/img/logo-background.svg
+  - Bluesky:
+    - abbr: BS
+      href: https://bsky.app/
+      icon: https://upload.wikimedia.org/wikipedia/commons/7/7a/Bluesky_Logo.svg
   - Reddit:
-    - icon: reddit.png
-      href: https://reddit.com/
-      description: The front page of the internet
-
-- Entertainment:
+    - abbr: RD
+      href: https://www.reddit.com/
+      icon: reddit
+  - Protonmail:
+    - abbr: PM
+      href: https://mail.protonmail.com/
+      icon: https://mail.proton.me/assets/favicon.d47d3d0bef6d338e377a.svg?v=5.0.39.7?v=z1emubbi1oc
   - YouTube:
     - abbr: YT
-      href: https://youtube.com/
+      href: https://www.youtube.com/
+      icon: youtube
+  - 5e Tools:
+    - abbr: 5E
+      href: https://5e.tools/
+      icon: https://5e.tools/favicon.svg
+  - PiKVM:
+    - abbr: PK
+      href: https://pikvm/
+      icon: pikvm
+  - Kickstarter:
+    - abbr: KS
+      href: https://www.kickstarter.com/
+      icon: https://i.kickstarter.com/xr7jn0op-kickstarter-logo-k-green.png?origin=static&sig=4JkVoy9rZeaAEtRVTEEkLn%2Bi%2F32Z6QyM7wWcp3EXY%2Bs%3D
+  - Backerkit:
+    - abbr: BK
+      href: https://www.backerkit.com/
+      icon: https://d2x9pgnb7vwmga.cloudfront.net/favicon-32x32.png
+  - ING:
+    - abbr: ING
+      href: https://www.ing.de/
+      icon: https://cdn.ing.de/ing-cms-ui/124.1.2/assets/favicons/icon.svg
+  - PayPal:
+    - abbr: PP
+      href: https://www.paypal.com/
+      icon: paypal
+  - Amazon:
+    - abbr: AM
+      href: https://www.amazon.de/
+      icon: amazon
+  - Steam:
+    - abbr: ST
+      href: https://store.steampowered.com/
+      icon: steam

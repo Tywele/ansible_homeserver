@@ -4,3 +4,12 @@ providers:
 
 title: Datacore
 hideVersion: true
+color: neutral
+headerStyle: clean
+layout:
+  Services:
+    style: row
+    columns: 4
+  Bookmarks:
+    style: row
+    columns: 4
