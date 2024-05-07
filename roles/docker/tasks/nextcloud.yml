@@ -3,7 +3,7 @@
     name: /nextcloud
     state: present
     filesystem_label: "{{ item }}"
-  with_items:
+  loop:
     - "{{ nvme_filesystem_label }}"
     - "{{ hdd_filesystem_label }}"
 

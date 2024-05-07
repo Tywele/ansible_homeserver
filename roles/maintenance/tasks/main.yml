@@ -5,7 +5,7 @@
     job: "smartctl -t short {{ item }}"
     state: present
     user: root
-  with_items:
+  loop:
     - "{{ nvme_device }}"
     - "{{ hdd_device1 }}"
     - "{{ hdd_device2 }}"
@@ -17,7 +17,7 @@
     job: "smartctl -t long {{ item }}"
     state: present
     user: root
-  with_items:
+  loop:
     - "{{ nvme_device }}"
     - "{{ hdd_device1 }}"
     - "{{ hdd_device2 }}"
@@ -27,7 +27,7 @@
     name: /snapshots
     state: present
     filesystem_label: "{{ item }}"
-  with_items:
+  loop:
     - "{{ nvme_filesystem_label }}"
     - "{{ hdd_filesystem_label }}"
 
@@ -71,7 +71,7 @@
     job: "btrfs scrub start {{ item }}"
     state: present
     user: root
-  with_items:
+  loop:
     - "/" 
     - "{{ nvme_mount_point }}"
     - "{{ hdd_mount_point }}"
