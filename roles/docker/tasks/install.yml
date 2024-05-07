@@ -10,12 +10,7 @@
 
 - name: install docker
   ansible.builtin.dnf:
-    name:
-      - docker-ce
-      - docker-ce-cli
-      - containerd.io
-      - docker-buildx-plugin
-      - docker-compose-plugin
+    name: "{{ docker_packages }}"
     state: latest
 
 - name: start docker service

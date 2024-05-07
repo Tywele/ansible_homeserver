@@ -8,6 +8,13 @@ packages:
   - smartmontools
   - rsync
 
+docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-buildx-plugin
+  - docker-compose-plugin
+
 nvme_device: /dev/sdb
 hdd_device1: /dev/sdc
 hdd_device2: /dev/sdd
