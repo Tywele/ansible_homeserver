@@ -3,7 +3,7 @@
     fstype: btrfs
     dev: "{{ item }}"
     state: present
-  with_items:
+  loop:
     - "{{ nvme_device }}"
     - "{{ hdd_device1 }}"
     - "{{ hdd_device2 }}"
@@ -67,14 +67,11 @@
   ansible.builtin.command: btrfs filesystem label {{ hdd_mount_point }} {{ hdd_filesystem_label }}
   when: has_label_hdd1 == ""
 
-- name: add {{ nvme_device }} to /etc/fstab
+- name: add devices to /etc/fstab
   ansible.builtin.lineinfile:
     path: /etc/fstab
-    regexp: "^{{ nvme_device }}"
-    line: "UUID={{ nvme_uuid }} {{ nvme_mount_point }} btrfs defaults,autodefrag 0 2"
-
-- name: add {{ hdd_device1 }} to /etc/fstab
-  ansible.builtin.lineinfile:
-    path: /etc/fstab
-    regexp: "^{{ hdd_device1 }}"
-    line: "UUID={{ hdd1_uuid }} {{ hdd_mount_point }} btrfs defaults,autodefrag 0 2"
+    regexp: "^{{ item.device }}"
+    line: "UUID={{ item.uuid }} {{ item.mount_point }} btrfs defaults,autodefrag 0 2"
+  loop:
+    - { device: "{{ nvme_device }}", uuid: "{{ nvme_uuid }}", mount_point: "{{ nvme_mount_point }}" }
+    - { device: "{{ hdd_device1 }}", uuid: "{{ hdd1_uuid }}", mount_point: "{{ hdd_mount_point }}" }

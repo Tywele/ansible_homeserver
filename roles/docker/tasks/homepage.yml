@@ -17,42 +17,25 @@
       - "{{ hdd_mount_point }}:{{ hdd_mount_point }}"
       - "{{ nvme_mount_point }}/homepage/config:/app/config"
 
-- name: copy custom.js for Homepage
+- name: copy config files for Homepage
   ansible.builtin.copy:
-    src: homepage_custom.js
-    dest: "{{ nvme_mount_point }}/homepage/config/custom.js"
+    src: "{{ item.src }}"
+    dest: "{{ nvme_mount_point }}/homepage/config/{{ item.dest }}"
     owner: root
     group: root
     mode: 0755
+  loop:
+    - { src: "homepage_custom.js", dest: "custom.js" }
+    - { src: "homepage_settings.yaml", dest: "settings.yaml" }
+    - { src: "homepage_bookmarks.yaml", dest: "bookmarks.yaml" }
 
-- name: copy settings.yaml for Homepage
-  ansible.builtin.copy:
-    src: homepage_settings.yaml
-    dest: "{{ nvme_mount_point }}/homepage/config/settings.yaml"
-    owner: root
-    group: root
-    mode: 0755
-
-- name: copy services.yaml for Homepage
+- name: copy template configs for Homepage
   ansible.builtin.template:
-    src: homepage_services.j2
-    dest: "{{ nvme_mount_point }}/homepage/config/services.yaml"
+    src: "{{ item.src }}"
+    dest: "{{ nvme_mount_point }}/homepage/config/{{ item.dest }}"
     owner: root
     group: root
     mode: 0755
-
-- name: copy bookmarks.yaml for Homepage
-  ansible.builtin.copy:
-    src: homepage_bookmarks.yaml
-    dest: "{{ nvme_mount_point }}/homepage/config/bookmarks.yaml"
-    owner: root
-    group: root
-    mode: 0755
-
-- name: copy widgets.yaml for Homepage
-  ansible.builtin.template:
-    src: homepage_widgets.j2
-    dest: "{{ nvme_mount_point }}/homepage/config/widgets.yaml"
-    owner: root
-    group: root
-    mode: 0755
+  loop:
+    - { src: "homepage_services.j2", dest: "services.yaml"}
+    - { src: "homepage_widgets.j2", dest: "widgets.yaml" }
