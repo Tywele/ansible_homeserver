@@ -53,7 +53,7 @@ nextcloud_admin_password: "secretpassword"
 admin_username: "admin"
 username: "username"
 email: "example@test.com"
-watchtower_notification_url: "discord://token@id
+watchtower_notification_url: "discord://token@id"
 domain_name: "domain.tld"
 storage_box_address: "uXXXXX@uXXXXX.your-storagebox.de"
 ```
