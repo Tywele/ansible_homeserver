@@ -1,7 +1,7 @@
 homelab:
   hosts:
     datacore:
-      ansible_host: 192.168.178.193
+      ansible_host: 192.168.178.167
       ansible_user: "{{ username }}"
       ansible_connection: ssh
       ansible_ssh_private_key_file: ~/.ssh/homeserver

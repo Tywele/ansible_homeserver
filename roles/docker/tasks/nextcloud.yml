@@ -45,7 +45,7 @@
       MYSQL_DATABASE: "{{ nextcloud_mariadb_db_name }}"
       MYSQL_USER: "{{ nextcloud_mariadb_db_user }}"
       MYSQL_PASSWORD: "{{ nextcloud_mariadb_db_password }}"
-      NEXTCLOUD_TRUSTED_DOMAINS: datacore.network nextcloud.datacore.network
+      NEXTCLOUD_TRUSTED_DOMAINS: "nextcloud.{{ domain_name }}"
       NEXTCLOUD_ADMIN_USER: "{{ admin_username }}"
       NEXTCLOUD_ADMIN_PASSWORD: "{{ nextcloud_admin_password }}"
       # any config.php variable can be overwritten with NC_*
