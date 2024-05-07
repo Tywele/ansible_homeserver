@@ -4,6 +4,37 @@ This is my Ansible playbook to setup my homeserver running Fedora Server.
 
 This playbook assumes that you have one boot drive and 3 storage drives. 1 of the storage drives is an NVMe drive to store app config data and the other 2 are HDD drives which store other data like images, books and anything else that requires more space than configs.
 
+## Services
+The following services will be setup with this playbook:
+
+- [Actual Budget](https://actualbudget.com/)
+- [Homepage](https://gethomepage.dev/latest/)
+- [Immich](https://immich.app/)
+- [Komga](https://komga.org/)
+- [Nextcloud](https://nextcloud.com/)
+- [Nginx Proxy Manager](https://nginxproxymanager.com/)
+- [Syncthing](https://syncthing.net/)
+- [Uptime Kuma](https://github.com/louislam/uptime-kuma)
+- [Watchtower](https://containrrr.dev/watchtower/)
+
+## Drive Structure
+The drives will be setup as follows (output from my test VM):
+```
+~$ sudo btrfs filesystem show
+Label: 'fedora'  uuid: 2ee78a69-ec4f-41bc-af26-3f33d6b38d26
+        Total devices 1 FS bytes used 5.16GiB
+        devid    1 size 19.00GiB used 7.02GiB path /dev/sda3
+
+Label: 'apps'  uuid: d4a08458-3ac6-429b-a6e5-3528a8ef9c1d
+        Total devices 1 FS bytes used 1.18GiB
+        devid    1 size 50.00GiB used 4.52GiB path /dev/sdb
+
+Label: 'data'  uuid: 020571bf-743a-45a9-9c8b-4d10aabb8453
+        Total devices 2 FS bytes used 37.46MiB
+        devid    1 size 400.00GiB used 4.03GiB path /dev/sdc
+        devid    2 size 400.00GiB used 4.03GiB path /dev/sdd
+```
+
 ## Setup
 Before using this playbook you need to generate an SSH keypair and name it `homeserver` and use it to connect to the homerserver once.
 
