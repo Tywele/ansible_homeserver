@@ -31,50 +31,47 @@
     - "{{ nvme_filesystem_label }}"
     - "{{ hdd_filesystem_label }}"
 
-- name: create job for daily btrfs snapshots of apps
+- name: create jobs for daily btrfs snapshots
   ansible.builtin.cron:
-    name: "daily btrfs snapshot of apps"
+    name: "daily btrfs snapshot of {{ item.filesystem_label }}"
     special_time: "daily"
-    job: "btrfs subvolume snapshot -r {{ nvme_mount_point }} {{ nvme_mount_point }}/snapshots/apps-$(date +\"%Y-%m-%d\")"
+    job: "btrfs subvolume snapshot -r {{ item.mount_point }} {{ item.mount_point }}/snapshots/$(date +\"%Y-%m-%d\")"
     state: present
     user: root
+  loop:
+    - { mount_point: "{{ nvme_mount_point }}", filesystem_label: "{{ nvme_filesystem_label }}" }
+    - { mount_point: "{{ hdd_mount_point }}", filesystem_label: "{{ hdd_filesystem_label }}" }
 
-- name: create job daily btrfs snapshots of data
+- name: create jobs for deleeting snapshots older than 30 days
   ansible.builtin.cron:
-    name: "daily btrfs snapshot of data"
+    name: "daily cleanup of old snapshots for {{ item.filesystem_label }} (> 30 days)"
     special_time: "daily"
-    job: "btrfs subvolume snapshot -r {{ hdd_mount_point }} {{ hdd_mount_point }}/snapshots/data-$(date +\"%Y-%m-%d\")"
+    job: "find {{ item.mount_point }}/snapshots -maxdepth 1 -mindepth 1 -type d -mtime +30 -exec btrfs subvolume delete {} \\;"
     state: present
     user: root
+  loop:
+    - { mount_point: "{{ nvme_mount_point }}", filesystem_label: "{{ nvme_filesystem_label }}" }
+    - { mount_point: "{{ hdd_mount_point }}", filesystem_label: "{{ hdd_filesystem_label }}" }
 
-- name: create job for deleting snapshots of apps older than 30 days
+- name: create jobs for weekly rsync
   ansible.builtin.cron:
-    name: "daily cleanup of old snapshots for apps (> 30 days)"
-    special_time: "daily"
-    job: "find {{ nvme_mount_point }}/snapshots -maxdepth 1 -mindepth 1 -type d -mtime +30 -exec btrfs subvolume delete {} \\;"
-    state: present
-    user: root
-
-- name: create job for deleting snapshots of data older than 30 days
-  ansible.builtin.cron:
-    name: "daily cleanup of old snapshots for data (> 30 days)"
-    special_time: "daily"
-    job: "find {{ hdd_mount_point }}/snapshots -maxdepth 1 -mindepth 1 -type d -mtime +30 -exec btrfs subvolume delete {} \\;"
-    state: present
-    user: root
-
-- name: create job for weekly rsync of {{ nvme_mount_point }}
-  ansible.builtin.cron:
-    name: "weekly rsync of {{ nvme_mount_point }}"
+    name: "weekly rsync of {{ item.mount_point }}"
     special_time: "weekly"
-    job: "rsync -rlvzq --delete --stats --progress --numeric-ids --log-file=/var/log/rsync-{{ nvme_filesystem_label }}.log -e 'ssh -p23 -i /home/{{ username }}/.ssh/id_ed25519' {{ nvme_mount_point }} {{ storage_box_address }}:/home"
+    job: "rsync -rlvzq --delete --stats --progress --numeric-ids --log-file=/var/log/rsync-{{ item.filesystem_label }}.log -e 'ssh -p23 -i /home/{{ username }}/.ssh/id_ed25519' {{ item.mount_point }} {{ storage_box_address }}:/home"
     state: present
     user: root
+  loop:
+    - { mount_point: "{{ nvme_mount_point }}", filesystem_label: "{{ nvme_filesystem_label }}" }
+    - { mount_point: "{{ hdd_mount_point }}", filesystem_label: "{{ hdd_filesystem_label }}" }
 
-- name: create job for weekly rsync of {{ hdd_mount_point }}
+- name: create jobs for monthly btrfs scrub
   ansible.builtin.cron:
-    name: "weekly rsync of {{ hdd_mount_point }}"
-    special_time: "weekly"
-    job: "rsync -rlvzq --delete --stats --progress --numeric-ids --log-file=/var/log/rsync-{{ hdd_filesystem_label }}.log -e 'ssh -p23 -i /home/{{ username }}/.ssh/id_ed25519' {{ hdd_mount_point }} {{ storage_box_address }}:/home"
+    name: "monthly btrfs scrub of {{ item }}"
+    special_time: "monthly"
+    job: "btrfs scrub start {{ item }}"
     state: present
     user: root
+  with_items:
+    - "/" 
+    - "{{ nvme_mount_point }}"
+    - "{{ hdd_mount_point }}"
