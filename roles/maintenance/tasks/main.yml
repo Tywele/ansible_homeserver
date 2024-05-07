@@ -4,7 +4,7 @@
     special_time: "daily"
     job: "smartctl -t short {{ item }}"
     state: present
-    user: "{{ username }}"
+    user: root
   with_items:
     - "{{ nvme_device }}"
     - "{{ hdd_device1 }}"
@@ -16,7 +16,7 @@
     special_time: "weekly"
     job: "smartctl -t long {{ item }}"
     state: present
-    user: "{{ username }}"
+    user: root
   with_items:
     - "{{ nvme_device }}"
     - "{{ hdd_device1 }}"
@@ -37,6 +37,7 @@
     special_time: "daily"
     job: "btrfs subvolume snapshot -r {{ nvme_mount_point }} {{ nvme_mount_point }}/snapshots/apps-$(date +\"%Y-%m-%d\")"
     state: present
+    user: root
 
 - name: create job daily btrfs snapshots of data
   ansible.builtin.cron:
@@ -44,6 +45,7 @@
     special_time: "daily"
     job: "btrfs subvolume snapshot -r {{ hdd_mount_point }} {{ hdd_mount_point }}/snapshots/data-$(date +\"%Y-%m-%d\")"
     state: present
+    user: root
 
 - name: create job for deleting snapshots of apps older than 30 days
   ansible.builtin.cron:
@@ -51,6 +53,7 @@
     special_time: "daily"
     job: "find {{ nvme_mount_point }}/snapshots -maxdepth 1 -mindepth 1 -type d -mtime +30 -exec btrfs subvolume delete {} \\;"
     state: present
+    user: root
 
 - name: create job for deleting snapshots of data older than 30 days
   ansible.builtin.cron:
@@ -58,5 +61,20 @@
     special_time: "daily"
     job: "find {{ hdd_mount_point }}/snapshots -maxdepth 1 -mindepth 1 -type d -mtime +30 -exec btrfs subvolume delete {} \\;"
     state: present
+    user: root
 
-# weekly rsyncs of immich, komga, nextcloud, syncthing and actual-budget volumes to storage box
+- name: create job for weekly rsync of {{ nvme_mount_point }}
+  ansible.builtin.cron:
+    name: "weekly rsync of {{ nvme_mount_point }}"
+    special_time: "weekly"
+    job: "rsync -rlvzq --delete --stats --progress --numeric-ids --log-file=/var/log/rsync-{{ nvme_filesystem_label }}.log -e 'ssh -p23 -i /home/{{ username }}/.ssh/id_ed25519' {{ nvme_mount_point }} {{ storage_box_address }}:/home"
+    state: present
+    user: root
+
+- name: create job for weekly rsync of {{ hdd_mount_point }}
+  ansible.builtin.cron:
+    name: "weekly rsync of {{ hdd_mount_point }}"
+    special_time: "weekly"
+    job: "rsync -rlvzq --delete --stats --progress --numeric-ids --log-file=/var/log/rsync-{{ hdd_filesystem_label }}.log -e 'ssh -p23 -i /home/{{ username }}/.ssh/id_ed25519' {{ hdd_mount_point }} {{ storage_box_address }}:/home"
+    state: present
+    user: root

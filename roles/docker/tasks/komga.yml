@@ -19,3 +19,11 @@
       - "25600:25600"
     env:
       TZ: "Europe/Berlin"
+
+- name: change ownership of Komga data directory to {{ username }}
+  ansible.builtin.file:
+    path: "{{ hdd_mount_point }}/komga/data"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    recurse: yes
+    state: directory
