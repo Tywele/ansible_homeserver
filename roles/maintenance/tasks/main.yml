@@ -42,7 +42,7 @@
     - { mount_point: "{{ nvme_mount_point }}", filesystem_label: "{{ nvme_filesystem_label }}" }
     - { mount_point: "{{ hdd_mount_point }}", filesystem_label: "{{ hdd_filesystem_label }}" }
 
-- name: create jobs for deleeting snapshots older than 30 days
+- name: create jobs for deleting snapshots older than 30 days
   ansible.builtin.cron:
     name: "daily cleanup of old snapshots for {{ item.filesystem_label }} (> 30 days)"
     special_time: "daily"
