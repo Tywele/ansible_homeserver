@@ -1,17 +1,9 @@
 - resources:
-    label: System
     cpu: true
     memory: true
     cputemp: true
     units: metric
-    expanded: true
-
-- resources:
-    label: Storage
-    disk: 
-      - /
-      - "{{ nvme_mount_point }}"
-      - "{{ hdd_mount_point }}"
+    disk: "{{ hdd_mount_point }}"
     expanded: true
     diskUnits: bbytes
 

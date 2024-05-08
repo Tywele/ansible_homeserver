@@ -5,7 +5,8 @@ providers:
 title: Datacore
 hideVersion: true
 color: neutral
-headerStyle: clean
+headerStyle: boxedWidgets
+useEqualHeight: true
 layout:
   Services:
     style: row

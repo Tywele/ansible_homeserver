@@ -35,7 +35,7 @@
   ansible.builtin.cron:
     name: "daily btrfs snapshot of {{ item.filesystem_label }}"
     special_time: "daily"
-    job: "btrfs subvolume snapshot -r {{ item.mount_point }} {{ item.mount_point }}/snapshots/$(date +\"%Y-%m-%d\")"
+    job: "btrfs subvolume snapshot -r {{ item.mount_point }} {{ item.mount_point }}/snapshots/{{ item.filesystem_label }}-$(date +\"\\%Y-\\%m-\\%d\")"
     state: present
     user: root
   loop:
