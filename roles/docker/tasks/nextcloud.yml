@@ -51,5 +51,7 @@
       # any config.php variable can be overwritten with NC_*
       NC_maintenance_window_start: "1"
       NC_default_phone_region: "DE"
+      NC_overwrite.cli.url: "https://nextcloud.{{ domain_name }}"
+      NC_overwriteprotocol: "https"
     networks:
       - name: nextcloud-network
