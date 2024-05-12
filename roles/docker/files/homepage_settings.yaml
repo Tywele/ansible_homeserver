@@ -11,6 +11,27 @@ layout:
   Services:
     style: row
     columns: 4
-  Bookmarks:
+  Social Media:
     style: row
-    columns: 4
+    columns: 3
+  Communication:
+    style: row
+    columns: 1
+  Entertainment:
+    style: row
+    columns: 3
+  Tabletop:
+    style: row
+    columns: 1
+  Shops:
+    style: row
+    columns: 2
+  Development:
+    style: row
+    columns: 3
+  Crowdfunding:
+    style: row
+    columns: 3
+  Banking:
+    style: row
+    columns: 2

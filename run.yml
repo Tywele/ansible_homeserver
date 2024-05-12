@@ -2,7 +2,11 @@
 
 - hosts: homelab
   become: yes
-  tasks:
+  pre_tasks:
+    - name: install dnf5
+      ansible.builtin.dnf:
+        name: dnf5
+        state: present
   roles: 
     - essentials
     - btrfs
