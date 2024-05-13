@@ -16,7 +16,7 @@ layout:
     columns: 3
   Communication:
     style: row
-    columns: 1
+    columns: 2
   Entertainment:
     style: row
     columns: 3

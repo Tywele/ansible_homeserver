@@ -18,6 +18,10 @@
     - abbr: PM
       href: https://mail.protonmail.com/
       icon: https://mail.proton.me/assets/favicon.d47d3d0bef6d338e377a.svg?v=5.0.39.7?v=z1emubbi1oc
+  - Simple-Fax:
+    - abbr: SF
+      href: https://simple-fax.de/
+      icon: https://simple-fax.de/wp-content/uploads/2017/06/xcropped-simplefax_favicon-180x180.png.pagespeed.ic.s4VyN-bc50.png 
 
 - Entertainment:
   - YouTube:
