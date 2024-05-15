@@ -8,3 +8,4 @@
     env:
       WATCHTOWER_NOTIFICATION_REPORT: "true"
       WATCHTOWER_NOTIFICATION_URL: "{{ watchtower_notification_url }}"
+      WATCHTOWER_SCHEDULE: "0 0 4 * * *" # every day at 04:00

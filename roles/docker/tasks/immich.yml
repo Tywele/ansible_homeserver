@@ -19,6 +19,8 @@
     restart_policy: always
     networks: 
       - name: immich-network
+    labels:
+      com.centurylinklabs.watchtower.monitor-only: "true"
 
 - name: deploy Immich-Postgres
   community.docker.docker_container:
@@ -33,6 +35,8 @@
       POSTGRES_PASSWORD: "{{ immich_postgres_db_password }}"
     networks: 
       - name: immich-network
+    labels:
+      com.centurylinklabs.watchtower.monitor-only: "true"
 
 - name: deploy Immich-Machine-Learning
   community.docker.docker_container:
@@ -41,8 +45,6 @@
     restart_policy: always
     volumes:
       - "{{ nvme_mount_point }}/immich/model-cache:/cache"
-    networks: 
-      - name: immich-network
     env:
       DB_DATABASE_NAME: "{{ immich_postgres_db_name }}"
       DB_USERNAME: "{{ immich_postgres_db_user }}"
@@ -50,6 +52,10 @@
       DB_DATA_LOCATION: "{{ nvme_mount_point }}/immich/postgres"
       DB_HOSTNAME: immich-postgres
       REDIS_HOSTNAME: immich-redis
+    networks: 
+      - name: immich-network
+    labels:
+      com.centurylinklabs.watchtower.monitor-only: "true"
 
 - name: deploy Immich-Microservices
   community.docker.docker_container:
@@ -60,8 +66,6 @@
     volumes:
       - "{{ hdd_mount_point}}/immich/library:/usr/src/app/upload"
       - /etc/localtime:/etc/localtime:ro
-    networks: 
-      - name: immich-network
     env:
       DB_DATABASE_NAME: "{{ immich_postgres_db_name }}"
       DB_USERNAME: "{{ immich_postgres_db_user }}"
@@ -69,6 +73,10 @@
       DB_DATA_LOCATION: "{{ nvme_mount_point }}/immich/postgres"
       DB_HOSTNAME: immich-postgres
       REDIS_HOSTNAME: immich-redis
+    networks: 
+      - name: immich-network
+    labels:
+      com.centurylinklabs.watchtower.monitor-only: "true"
 
 - name: deploy Immich-Server
   community.docker.docker_container:
@@ -81,8 +89,6 @@
       - /etc/localtime:/etc/localtime:ro
     ports:
       - "2283:3001"
-    networks: 
-      - name: immich-network
     env:
       DB_DATABASE_NAME: "{{ immich_postgres_db_name }}"
       DB_USERNAME: "{{ immich_postgres_db_user }}"
@@ -90,3 +96,7 @@
       DB_DATA_LOCATION: "{{ nvme_mount_point }}/immich/postgres"
       DB_HOSTNAME: immich-postgres
       REDIS_HOSTNAME: immich-redis
+    networks: 
+      - name: immich-network
+    labels:
+      com.centurylinklabs.watchtower.monitor-only: "true"
