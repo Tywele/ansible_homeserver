@@ -38,6 +38,27 @@
     labels:
       com.centurylinklabs.watchtower.monitor-only: "true"
 
+- name: deploy Immich-DB-Dumper
+  community.docker.docker_container:
+    name: immich-db-dumper
+    image: prodrigestivill/postgres-backup-local:14
+    restart_policy: always
+    volumes:
+      - "{{ hdd_mount_point }}/immich/db_dumps:/db_dumps"
+    env:
+      POSTGRES_HOST: immich-postgres
+      POSTGRES_CLUSTER: "TRUE"
+      POSTGRES_USER: "{{ immich_postgres_db_user }}"
+      POSTGRES_PASSWORD: "{{ immich_postgres_db_password }}"
+      POSTGRES_DB: "{{ immich_postgres_db_name }}"
+      SCHEDULE: "@daily"
+      POSTGRES_EXTRA_OPTS: "--clean --if-exists"
+      BACKUP_DIR: /db_dumps
+    networks: 
+      - name: immich-network
+    labels:
+      com.centurylinklabs.watchtower.monitor-only: "true"
+
 - name: deploy Immich-Machine-Learning
   community.docker.docker_container:
     name: immich-machine-learning
