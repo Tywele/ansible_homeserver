@@ -25,6 +25,15 @@
     msg: "rebooting to apply core package updates"
   when: needs_restarting.rc != 0
 
+- name: create SSH config
+  ansible.builtin.copy:
+    src: ssh_config
+    dest: "/home/{{ username }}/.ssh/config"
+    owner: "{{ username}}"
+    group: "{{ username }}"
+    mode: 0644
+  notify: restart sshd
+
 - name: disable SSH password auth
   ansible.builtin.lineinfile:
     dest: /etc/ssh/sshd_config
