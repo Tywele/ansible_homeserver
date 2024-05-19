@@ -1,2 +1,2 @@
 printf "\n"
-neofetch
+hyfetch

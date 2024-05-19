@@ -2,12 +2,11 @@ hostname: datacore
 
 packages:
   - nano
-  - neofetch
   - htop
   - dnf-plugins-core
   - smartmontools
   - rsync
-  # - hyfetch
+  - hyfetch
 
 docker_packages:
   - docker-ce
