@@ -37,3 +37,7 @@
 - name: Homepage
   ansible.builtin.import_tasks:
     file: homepage.yml
+
+- name: Photon
+  ansible.builtin.import_tasks:
+    file: photon.yml

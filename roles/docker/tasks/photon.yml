@@ -1,0 +1,21 @@
+- name: add btrfs subvolume for Photon
+  community.general.btrfs_subvolume:
+    name: /photon
+    state: present
+    filesystem_label: "{{ nvme_filesystem_label }}"
+
+- name: deploy Photon
+  community.docker.docker_container:
+    name: photon
+    image: ghcr.io/xyphyn/photon:v1.28.1
+    restart_policy: always
+    ports:
+      - "3333:3000"
+    env:
+      PUBLIC_INSTANCE_URL: lemmy.dbzer0.com
+      PUBLIC_DEFAULT_FEED_SORT: TopSixHour
+      PUBLIC_DEFAULT_FEED: Subscribed
+      PUBLIC_DEFAULT_COMMENT_SORT: Hot
+      PUBLIC_REMOVE_CREDIT: "true"
+      PUBLIC_SSR_ENABLED: "true"
+      PUBLIC_FACICON: "https://phtn.app/img/logo-background.svg"
