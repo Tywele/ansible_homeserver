@@ -22,6 +22,9 @@ hdd_device2: /dev/sdc
 nvme_mount_point: /mnt/nymph
 hdd_mount_point: /mnt/siren
 
+nvme_mount_point_name: nymph
+hdd_mount_point_name: siren
+
 nvme_filesystem_label: apps
 hdd_filesystem_label: data
 
