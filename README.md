@@ -8,11 +8,13 @@ This playbook assumes that you have one boot drive and 3 storage drives. 1 of th
 The following services will be setup with this playbook:
 
 - [Actual Budget](https://actualbudget.com/)
+- [Home Assistant](https://www.home-assistant.io/)
 - [Homepage](https://gethomepage.dev/latest/)
 - [Immich](https://immich.app/)
 - [Komga](https://komga.org/)
 - [Nextcloud](https://nextcloud.com/)
 - [Nginx Proxy Manager](https://nginxproxymanager.com/)
+- [Photon](https://github.com/Xyphyn/Photon)
 - [Syncthing](https://syncthing.net/)
 - [Uptime Kuma](https://github.com/louislam/uptime-kuma)
 - [Watchtower](https://containrrr.dev/watchtower/)
@@ -65,4 +67,5 @@ email: "example@test.com"
 watchtower_notification_url: "discord://token@id"
 domain_name: "domain.tld"
 storage_box_address: "uXXXXX@uXXXXX.your-storagebox.de"
+borg_backup_password: "secretpassword"
 ```

@@ -1,0 +1,24 @@
+- name: add btrfs subvolume for Home Assistant
+  community.general.btrfs_subvolume:
+    name: /home-assistant
+    state: present
+    filesystem_label: "{{ nvme_filesystem_label }}"
+
+- name: open Home Assistant ports
+  ansible.builtin.firewalld:
+    port: 8123/tcp
+    permanent: yes
+    state: enabled
+    immediate: true
+
+- name: deploy Home Assistant
+  community.docker.docker_container:
+    name: home-assistant
+    image: ghcr.io/home-assistant/home-assistant:stable
+    restart_policy: unless-stopped
+    volumes:
+      - "{{ nvme_mount_point }}/home-assistant/config:/config"
+      - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
+    network_mode: host
+    privileged: true

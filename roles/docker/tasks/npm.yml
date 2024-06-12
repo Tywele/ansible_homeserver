@@ -4,6 +4,12 @@
     state: present
     filesystem_label: "{{ nvme_filesystem_label }}"
 
+- name: create Nginx Proxy Manager network
+  community.docker.docker_network:
+    name: npm-network
+    state: present
+    internal: no
+
 - name: deploy Nginx Proxy Manager
   community.docker.docker_container:
     name: nginx-proxy-manager
@@ -16,3 +22,5 @@
       - "80:80"
       - "81:81"
       - "443:443"
+    networks:
+      - name: npm-network

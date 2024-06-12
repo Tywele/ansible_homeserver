@@ -41,3 +41,7 @@
 - name: Photon
   ansible.builtin.import_tasks:
     file: photon.yml
+
+- name: Home Assistant
+  ansible.builtin.import_tasks:
+    file: homeassistant.yml
