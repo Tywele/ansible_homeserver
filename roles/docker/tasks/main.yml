@@ -45,3 +45,7 @@
 - name: Home Assistant
   ansible.builtin.import_tasks:
     file: homeassistant.yml
+
+- name: Protonmail Bridge
+  ansible.builtin.import_tasks:
+    file: protonmail-bridge.yml

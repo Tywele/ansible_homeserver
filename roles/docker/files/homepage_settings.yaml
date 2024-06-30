@@ -10,7 +10,7 @@ useEqualHeight: true
 layout:
   Services:
     style: row
-    columns: 4
+    columns: 3
   Social Media:
     style: row
     columns: 3

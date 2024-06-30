@@ -53,5 +53,9 @@
       NC_default_phone_region: "DE"
       NC_overwrite.cli.url: "https://nextcloud.{{ domain_name }}"
       NC_overwriteprotocol: "https"
+      NC_log_type: "file"
+      NC_logfile: "/var/www/html/data/nextcloud.log"
+      NC_loglevel: "2"
+      NC_logdateformat: "F d, Y H:i:s"
     networks:
       - name: nextcloud-network
