@@ -34,6 +34,7 @@
     image: nextcloud:latest
     restart_policy: always
     volumes:
+      - "{{ nvme_mount_point }}/nextcloud:/var/www/html"
       - "{{ nvme_mount_point }}/nextcloud/config:/var/www/html/config"
       - "{{ nvme_mount_point }}/nextcloud/apps:/var/www/html/custom_apps"
       - "{{ hdd_mount_point }}/nextcloud/data:/var/www/html/data"
@@ -49,6 +50,37 @@
       NEXTCLOUD_ADMIN_USER: "{{ admin_username }}"
       NEXTCLOUD_ADMIN_PASSWORD: "{{ nextcloud_admin_password }}"
       # any config.php variable can be overwritten with NC_*
+      NC_maintenance_window_start: "1"
+      NC_default_phone_region: "DE"
+      NC_overwrite.cli.url: "https://nextcloud.{{ domain_name }}"
+      NC_overwriteprotocol: "https"
+      NC_log_type: "file"
+      NC_logfile: "/var/www/html/data/nextcloud.log"
+      NC_loglevel: "2"
+      NC_logdateformat: "F d, Y H:i:s"
+    networks:
+      - name: nextcloud-network
+
+- name: deploy Nextcloud Cron
+  community.docker.docker_container:
+    name: nextcloud-cron
+    image: nextcloud:latest
+    restart_policy: unless-stopped
+    entrypoint: /cron.sh
+    volumes:
+      - "{{ nvme_mount_point }}/nextcloud:/var/www/html"
+      - "{{ nvme_mount_point }}/nextcloud/config:/var/www/html/config"
+      - "{{ nvme_mount_point }}/nextcloud/apps:/var/www/html/custom_apps"
+      - "{{ hdd_mount_point }}/nextcloud/data:/var/www/html/data"
+      - "{{ hdd_mount_point }}/nextcloud/themes:/var/www/html/themes"
+    env:
+      MYSQL_HOST: nextcloud-mariadb
+      MYSQL_DATABASE: "{{ nextcloud_mariadb_db_name }}"
+      MYSQL_USER: "{{ nextcloud_mariadb_db_user }}"
+      MYSQL_PASSWORD: "{{ nextcloud_mariadb_db_password }}"
+      NEXTCLOUD_TRUSTED_DOMAINS: "nextcloud.{{ domain_name }}"
+      NEXTCLOUD_ADMIN_USER: "{{ admin_username }}"
+      NEXTCLOUD_ADMIN_PASSWORD: "{{ nextcloud_admin_password }}"
       NC_maintenance_window_start: "1"
       NC_default_phone_region: "DE"
       NC_overwrite.cli.url: "https://nextcloud.{{ domain_name }}"
