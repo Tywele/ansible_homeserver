@@ -2,6 +2,14 @@
   ansible.builtin.hostname:
     name: "{{ hostname }}"
 
+- name: change configuration for DNF
+  ansible.builtin.blockinfile:
+    path: /etc/dnf/dnf.conf
+    block: |
+      max_parallel_downloads=10
+      fastestmirror=True
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+
 - name: update packages
   ansible.builtin.dnf:
     name: "*"
