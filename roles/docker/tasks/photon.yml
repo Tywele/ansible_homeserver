@@ -7,7 +7,7 @@
 - name: deploy Photon
   community.docker.docker_container:
     name: photon
-    image: ghcr.io/xyphyn/photon:v1.28.1
+    image: ghcr.io/xyphyn/photon:latest
     restart_policy: always
     ports:
       - "3333:3000"
