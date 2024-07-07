@@ -34,7 +34,7 @@
     image: nextcloud:latest
     restart_policy: always
     volumes:
-      - "{{ nvme_mount_point }}/nextcloud:/var/www/html"
+      - "{{ nvme_mount_point }}/nextcloud/main:/var/www/html"
       - "{{ nvme_mount_point }}/nextcloud/config:/var/www/html/config"
       - "{{ nvme_mount_point }}/nextcloud/apps:/var/www/html/custom_apps"
       - "{{ hdd_mount_point }}/nextcloud/data:/var/www/html/data"
@@ -68,7 +68,7 @@
     restart_policy: unless-stopped
     entrypoint: /cron.sh
     volumes:
-      - "{{ nvme_mount_point }}/nextcloud:/var/www/html"
+      - "{{ nvme_mount_point }}/nextcloud/main:/var/www/html"
       - "{{ nvme_mount_point }}/nextcloud/config:/var/www/html/config"
       - "{{ nvme_mount_point }}/nextcloud/apps:/var/www/html/custom_apps"
       - "{{ hdd_mount_point }}/nextcloud/data:/var/www/html/data"
