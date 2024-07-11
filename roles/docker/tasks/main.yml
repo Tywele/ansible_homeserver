@@ -49,3 +49,7 @@
 - name: Protonmail Bridge
   ansible.builtin.import_tasks:
     file: protonmail-bridge.yml
+
+- name: FreshRSS
+  ansible.builtin.import_tasks:
+    file: freshrss.yml
