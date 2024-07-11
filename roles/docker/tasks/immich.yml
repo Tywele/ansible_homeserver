@@ -62,7 +62,7 @@
 - name: deploy Immich-Machine-Learning
   community.docker.docker_container:
     name: immich-machine-learning
-    image: ghcr.io/immich-app/immich-machine-learning:v1.107.2
+    image: ghcr.io/immich-app/immich-machine-learning:v1.108.0
     restart_policy: always
     volumes:
       - "{{ nvme_mount_point }}/immich/model-cache:/cache"
@@ -81,7 +81,7 @@
 - name: deploy Immich-Server
   community.docker.docker_container:
     name: immich-server
-    image: ghcr.io/immich-app/immich-server:v1.107.2
+    image: ghcr.io/immich-app/immich-server:v1.108.0
     restart_policy: always
     volumes:
       - "{{ hdd_mount_point}}/immich/library:/usr/src/app/upload"
