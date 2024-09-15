@@ -10,7 +10,7 @@
     image: ghcr.io/gethomepage/homepage:latest
     restart_policy: unless-stopped
     ports:
-      - "3000:3000"
+      - "3010:3000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - "{{ nvme_mount_point }}:{{ nvme_mount_point }}"

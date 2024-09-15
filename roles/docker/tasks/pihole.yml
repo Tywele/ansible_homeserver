@@ -1,0 +1,37 @@
+- name: add btrfs subvolumes for Pi-Hole
+  community.general.btrfs_subvolume:
+    name: /pihole
+    state: present
+    filesystem_label: "{{ nvme_filesystem_label }}" 
+
+# - name: disable DNSStubListener
+#   ansible.builtin.lineinfile:
+#     ansible.builtin.lineinfile:
+#     dest: /etc/systemd/resolved.conf
+#     regexp: "^#DNSStubListener=yes"
+#     line: "DNSStubListener=no"
+#   notify: restart systemd-resolved
+
+- name: stop systemd-resolved
+  ansible.builtin.service:
+    name: systemd-resolved
+    state: stopped
+
+- name: deploy Pi-Hole
+  community.docker.docker_container:
+    name: pihole
+    image: pihole/pihole:latest
+    restart_policy: unless-stopped
+    volumes:
+      - "{{ nvme_mount_point }}/pihole/etc-pihole:/etc/pihole"
+      - "{{ nvme_mount_point }}/pihole/etc-dnsmasq.d:/etc/dnsmasq.d"
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "90:80/tcp"
+    env:
+      TZ: Europe/Berlin
+      WEBPASSWORD: "{{ pihole_admin_password }}"
+      FTLCONF_LOCAL_IPV4: "{{ local_ipv4 }}"
+    labels:
+      com.centurylinklabs.watchtower.monitor-only: "true"

@@ -53,3 +53,11 @@
 - name: FreshRSS
   ansible.builtin.import_tasks:
     file: freshrss.yml
+
+- name: Paperless
+  ansible.builtin.import_tasks:
+    file: paperless.yml
+
+- name: Pi-hole
+  ansible.builtin.import_tasks:
+    file: pihole.yml

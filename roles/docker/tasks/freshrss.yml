@@ -4,16 +4,47 @@
     state: present
     filesystem_label: "{{ nvme_filesystem_label }}"
 
+- name: create FreshRSS network
+  community.docker.docker_network:
+    name: freshrss-network
+    state: present
+
 - name: deploy FreshRSS
   community.docker.docker_container:
     name: freshrss
     image: freshrss/freshrss:latest
     restart_policy: unless-stopped
     volumes:
-      - "{{ hdd_mount_point }}/freshrss/data:/var/www/FreshRSS/data"
-      - "{{ hdd_mount_point }}/freshrss/extensions:/var/www/FreshRSS/extensions"
+      - "{{ nvme_mount_point }}/freshrss/data:/var/www/FreshRSS/data"
+      - "{{ nvme_mount_point }}/freshrss/extensions:/var/www/FreshRSS/extensions"
     ports:
       - "8888:80"
     env:
       TZ: "Europe/Berlin"
       CRON_MIN: "2,32"
+    networks:
+      - name: freshrss-network
+
+- name: deploy FreshRSS Readability
+  community.docker.docker_container:
+    name: freshrss-readability
+    image: phpdockerio/readability-js-server
+    restart_policy: always
+    networks:
+      - name: freshrss-network
+
+- name: deploy FreshRSS Mercury
+  community.docker.docker_container:
+    name: freshrss-mercury
+    image: wangqiru/mercury-parser-api
+    restart_policy: always
+    networks:
+      - name: freshrss-network
+
+- name: change ownership of FreshRSS extensions directory to {{ username }}
+  ansible.builtin.file:
+    path: "{{ nvme_mount_point }}/freshrss/extensions"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    recurse: yes
+    state: directory

@@ -1,0 +1,39 @@
+- name: add btrfs subvolumes for Paperless
+  community.general.btrfs_subvolume:
+    name: /paperless
+    state: present
+    filesystem_label: "{{ nvme_filesystem_label }}" 
+
+- name: create Paperless network
+  community.docker.docker_network:
+    name: paperless-network
+    state: present
+
+- name: deploy Paperless-Redis
+  community.docker.docker_container:
+    name: paperless-redis
+    image: docker.io/library/redis:7
+    restart_policy: unless-stopped
+    networks: 
+      - name: paperless-network
+
+- name: deploy Paperless
+  community.docker.docker_container:
+    name: paperless
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    restart_policy: unless-stopped
+    volumes:
+      - "{{ nvme_mount_point }}/paperless/data:/usr/src/paperless/data"
+      - "{{ nvme_mount_point }}/paperless/media:/usr/src/paperless/media"
+      - "{{ nvme_mount_point }}/paperless/export:/usr/src/paperless/export"
+      - "{{ nvme_mount_point }}/paperless/consume:/usr/src/paperless/consume"
+    ports:
+      - "8010:8000"
+    env:
+      PAPERLESS_REDIS: redis://paperless-redis:6379
+      PAPERLESS_URL: "https://paperless.{{ domain_name }}"
+      PAPERLESS_TIME_ZONE: Europe/Berlin
+      PAPERLESS_OCR_LANGUAGE: ger
+      PAPERLESS_SECRET_KEY: "{{ paperless_secret_key }}"
+    networks:
+      - name: paperless-network
