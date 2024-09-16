@@ -23,7 +23,7 @@
     dest: "{{ nvme_mount_point }}/homepage/config/{{ item.dest }}"
     owner: root
     group: root
-    mode: 0755
+    mode: 0644
   loop:
     - { src: "homepage_custom.js", dest: "custom.js" }
     - { src: "homepage_settings.yaml", dest: "settings.yaml" }
@@ -34,7 +34,7 @@
     dest: "{{ nvme_mount_point }}/homepage/config/{{ item.dest }}"
     owner: root
     group: root
-    mode: 0755
+    mode: 0644
   loop:
     - { src: "homepage_services.j2", dest: "services.yaml"}
     - { src: "homepage_widgets.j2", dest: "widgets.yaml" }

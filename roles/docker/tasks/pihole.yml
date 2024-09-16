@@ -4,18 +4,14 @@
     state: present
     filesystem_label: "{{ nvme_filesystem_label }}" 
 
-# - name: disable DNSStubListener
-#   ansible.builtin.lineinfile:
-#     ansible.builtin.lineinfile:
-#     dest: /etc/systemd/resolved.conf
-#     regexp: "^#DNSStubListener=yes"
-#     line: "DNSStubListener=no"
-#   notify: restart systemd-resolved
-
-- name: stop systemd-resolved
-  ansible.builtin.service:
-    name: systemd-resolved
-    state: stopped
+- name: copy resolved.conf
+  ansible.builtin.copy:
+    src: resolved.conf
+    dest: /etc/systemd/resolved.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart systemd-resolved
 
 - name: deploy Pi-Hole
   community.docker.docker_container:
@@ -35,3 +31,9 @@
       FTLCONF_LOCAL_IPV4: "{{ local_ipv4 }}"
     labels:
       com.centurylinklabs.watchtower.monitor-only: "true"
+
+- name: change pihole-FTL.conf to allow Apple Private Relay
+  ansible.builtin.lineinfile:
+    path: "{{ nvme_mount_point }}/pihole/etc-pihole/pihole-FTL.conf"
+    regexp: "^BLOCK_ICLOUD_PR=false"
+    line: "BLOCK_ICLOUD_PR=false"
