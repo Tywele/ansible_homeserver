@@ -2,7 +2,7 @@
 - Social Media:
   - Photon:
     - abbr: PH
-      href: "https://photon.{{ domain_name }}/"
+      href: https://phtn.app/
       icon: https://raw.githubusercontent.com/Xyphyn/photon/main/static/img/logo-background.svg
   - Bluesky:
     - abbr: BS
@@ -17,7 +17,7 @@
   - Protonmail:
     - abbr: PM
       href: https://mail.protonmail.com/
-      icon: https://mail.proton.me/assets/favicon.d47d3d0bef6d338e377a.svg?v=5.0.39.7?v=z1emubbi1oc
+      icon: https://mail.proton.me/assets/static/favicon.d47d3d0bef6d338e377a.svg
   - Simple-Fax:
     - abbr: SF
       href: https://simple-fax.de/

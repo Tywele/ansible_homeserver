@@ -20,25 +20,9 @@
   - Immich:
       href: "https://photos.{{ domain_name }}/"
       icon: immich
-      widget:
-        type: immich
-        url: https://photos.{{ domain_name }}
-        key: {{ immich_api_key }}
-        fields: ["users", "photos", "videos", "storage"]
   - Uptime Kuma:
       href: "https://status.{{ domain_name }}/"
       icon: uptime-kuma
-      widget:
-        type: uptimekuma
-        url: https://status.{{ domain_name }}
-        slug: statusall
-        fields: ["up", "down", "uptime", "incident"]
   - FreshRSS:
       href: "https://rss.{{ domain_name }}/"
       icon: freshrss
-      widget:
-        type: freshrss
-        url: https://rss.{{ domain_name }}
-        fields: ["subscriptions", "unread"]
-        username: {{ rss_username }}
-        password: {{ rss_password }}

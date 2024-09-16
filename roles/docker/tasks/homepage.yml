@@ -27,6 +27,7 @@
   loop:
     - { src: "homepage_custom.js", dest: "custom.js" }
     - { src: "homepage_settings.yaml", dest: "settings.yaml" }
+    - { src: "homepage_bookmarks.yaml", dest: "bookmarks.yaml" }
 
 - name: copy template configs for Homepage
   ansible.builtin.template:
@@ -38,4 +39,3 @@
   loop:
     - { src: "homepage_services.j2", dest: "services.yaml"}
     - { src: "homepage_widgets.j2", dest: "widgets.yaml" }
-    - { src: "homepage_bookmarks.j2", dest: "bookmarks.yaml" }
