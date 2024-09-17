@@ -49,13 +49,33 @@
     line: "PasswordAuthentication no"
   notify: restart sshd
 
-- name: enable passwordless sudo for {{ username }}
+- name: disable root login
   ansible.builtin.lineinfile:
-    dest: /etc/sudoers
-    regexp: "^%wheel"
-    line: "{{ username }} ALL=(ALL) NOPASSWD: ALL"
-    validate: "/usr/sbin/visudo -cf %s"
+    dest: /etc/ssh/sshd_config
+    regexp: "^#PermitRootLogin yes"
+    line: "PermitRootLogin no"
   notify: restart sshd
+
+- name: change SSH port
+  ansible.builtin.lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "^#Port 22"
+    line: "Port {{ ssh_port }}"
+  notify: restart sshd
+
+- name: open SSH port
+  ansible.builtin.firewalld:
+    port: "{{ ssh_port }}/tcp"
+    permanent: yes
+    state: enabled
+    immediate: true
+
+- name: inform SELinux about new SSH port
+  community.general.seport:
+    ports: "{{ ssh_port }}"
+    proto: tcp
+    setype: ssh_port_t
+    state: present
 
 - name: copy hyfetch config file
   ansible.builtin.copy:
