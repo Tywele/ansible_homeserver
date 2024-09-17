@@ -2,3 +2,11 @@
   ansible.builtin.service:
     name: sshd
     state: restarted
+  notify: close default SSH port
+
+- name: close default SSH port
+  ansible.builtin.firewalld:
+    port: 22/tcp
+    permanent: yes
+    state: disabled
+    immediate: true
