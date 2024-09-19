@@ -22,8 +22,8 @@
       - "{{ nvme_mount_point }}/pihole/etc-pihole:/etc/pihole"
       - "{{ nvme_mount_point }}/pihole/etc-dnsmasq.d:/etc/dnsmasq.d"
     ports:
-      - "53:53/tcp"
-      - "53:53/udp"
+      - "{{ local_ipv4 }}:53:53/tcp"
+      - "{{ local_ipv4 }}:53:53/udp"
       - "90:80/tcp"
     env:
       TZ: Europe/Berlin
