@@ -33,7 +33,7 @@
       PAPERLESS_REDIS: redis://paperless-redis:6379
       PAPERLESS_URL: "https://paperless.{{ domain_name }}"
       PAPERLESS_TIME_ZONE: Europe/Berlin
-      PAPERLESS_OCR_LANGUAGE: ger
+      PAPERLESS_OCR_LANGUAGE: deu
       PAPERLESS_SECRET_KEY: "{{ paperless_secret_key }}"
     networks:
       - name: paperless-network
