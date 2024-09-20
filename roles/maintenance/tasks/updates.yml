@@ -1,0 +1,13 @@
+- name: copy dnf-automatic config file
+  ansible.builtin.template:
+    src: automatic.conf.j2
+    dest: /etc/dnf/automatic.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: enable dnf-automatic service
+  ansible.builtin.service:
+    name: dnf-automatic.timer
+    enabled: true
+    state: started

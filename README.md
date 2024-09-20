@@ -61,6 +61,7 @@ Hardening methods used so far are:
 - Change default SSH port to something different
 - Disable SSH password authentication
 - Disable login for `root`
+- Closing default SSH port
 
 ## Contents of the secret.yml
 These variables need to be added to the `/group_vars/all/vars.yml` file if you don't want to store them as an encrypted file.
@@ -86,4 +87,9 @@ paperless_secret_key: "secretkey"
 pihole_admin_password: "secretpassword"
 local_ipv4: "123.456.789.123"
 ssh_port: "1234"
+proton_email: "example@test.com"
+proton_password: "secretpassword"
+proton_name: "Firstname Lastname"
+proton_port: "111"
+proton_ip: "123.456.789.123"
 ```

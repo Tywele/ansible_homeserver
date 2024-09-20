@@ -17,7 +17,7 @@
       - "{{ hdd_mount_point }}:{{ hdd_mount_point }}"
       - "{{ nvme_mount_point }}/homepage/config:/app/config"
 
-- name: copy config files for Homepage
+- name: copy Homepage config files
   ansible.builtin.copy:
     src: "{{ item.src }}"
     dest: "{{ nvme_mount_point }}/homepage/config/{{ item.dest }}"
@@ -29,7 +29,7 @@
     - { src: "homepage_settings.yaml", dest: "settings.yaml" }
     - { src: "homepage_bookmarks.yaml", dest: "bookmarks.yaml" }
 
-- name: copy template configs for Homepage
+- name: copy Homepage template configs
   ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ nvme_mount_point }}/homepage/config/{{ item.dest }}"

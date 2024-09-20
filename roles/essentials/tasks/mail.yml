@@ -1,0 +1,14 @@
+- name: copy postfix template config
+  ansible.builtin.template:
+    src: main.cf.j2
+    dest: /etc/postfix/main.cf
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart postfix
+
+- name: enable postfix service
+  ansible.builtin.service:
+    name: postfix
+    enabled: true
+    state: started

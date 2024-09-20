@@ -1,0 +1,23 @@
+- name: create job for short SMART test
+  ansible.builtin.cron:
+    name: "daily SMART test short {{ item }}"
+    special_time: "daily"
+    job: "smartctl -t short {{ item }}"
+    state: present
+    user: root
+  loop:
+    - "{{ nvme_device }}"
+    - "{{ hdd_device1 }}"
+    - "{{ hdd_device2 }}"
+
+- name: create job for long SMART test
+  ansible.builtin.cron:
+    name: "weekly SMART test long {{ item }}"
+    special_time: "weekly"
+    job: "smartctl -t long {{ item }}"
+    state: present
+    user: root
+  loop:
+    - "{{ nvme_device }}"
+    - "{{ hdd_device1 }}"
+    - "{{ hdd_device2 }}"

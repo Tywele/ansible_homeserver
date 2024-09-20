@@ -1,0 +1,50 @@
+- name: create SSH config
+  ansible.builtin.copy:
+    src: ssh_config
+    dest: "/home/{{ username }}/.ssh/config"
+    owner: "{{ username}}"
+    group: "{{ username }}"
+    mode: 0644
+  notify: restart sshd
+
+- name: disable SSH password auth
+  ansible.builtin.lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "^#PasswordAuthentication yes"
+    line: "PasswordAuthentication no"
+  notify: restart sshd
+
+- name: disable root login
+  ansible.builtin.lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "^#PermitRootLogin yes"
+    line: "PermitRootLogin no"
+  notify: restart sshd
+
+- name: change SSH port
+  ansible.builtin.lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "^#Port 22"
+    line: "Port {{ ssh_port }}"
+  notify: restart sshd
+
+- name: open SSH port
+  ansible.builtin.firewalld:
+    port: "{{ ssh_port }}/tcp"
+    permanent: yes
+    state: enabled
+    immediate: true
+
+- name: inform SELinux about new SSH port
+  community.general.seport:
+    ports: "{{ ssh_port }}"
+    proto: tcp
+    setype: ssh_port_t
+    state: present
+
+- name: generate ssh keypair
+  ansible.builtin.openssh_keypair:
+    path: "/home/{{ username }}/.ssh/id_ed25519"
+    type: ed25519
+    owner: "{{ username }}"
+    group: "{{ username }}"

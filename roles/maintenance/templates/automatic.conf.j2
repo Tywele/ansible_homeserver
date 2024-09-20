@@ -1,0 +1,13 @@
+[commands]
+apply_updates=true
+download_updates=true
+upgrade_type=default
+reboot=when-changed
+
+[emitters]
+emit_via=command_email
+
+[command_email]
+command_format=mail -s "Automatic updates on {{ hostname }}" -r { email_from} { email_to}
+email_from=updates@mail.{{ domain_name }}
+email_to={{ email }}

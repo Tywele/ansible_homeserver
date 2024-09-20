@@ -10,3 +10,8 @@
     permanent: yes
     state: disabled
     immediate: true
+
+- name: restart postfix
+  ansible.builtin.service:
+    name: postfix
+    state: restarted

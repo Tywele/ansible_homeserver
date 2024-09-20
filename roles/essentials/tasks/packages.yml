@@ -1,0 +1,30 @@
+- name: change configuration for DNF
+  ansible.builtin.blockinfile:
+    path: /etc/dnf/dnf.conf
+    block: |
+      max_parallel_downloads=10
+      fastestmirror=True
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+
+- name: update packages
+  ansible.builtin.dnf:
+    name: "*"
+    state: latest
+
+- name: install packages
+  ansible.builtin.dnf:
+    name: "{{ packages }}"
+    state: latest
+
+- name: check for core package updates
+  ansible.builtin.command: dnf needs-restarting -r
+  register: needs_restarting
+  failed_when: false
+  changed_when: false
+
+- name: reboot
+  ansible.builtin.reboot:
+    reboot_timeout: 600
+    connect_timeout: 600
+    msg: "rebooting to apply core package updates"
+  when: needs_restarting.rc != 0

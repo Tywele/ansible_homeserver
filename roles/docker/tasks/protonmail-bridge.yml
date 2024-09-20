@@ -15,4 +15,4 @@
       - "1025:25/tcp"
       - "1143:143/tcp"
     networks:
-      - name: nextcloud-network 
+      - name: nextcloud-network

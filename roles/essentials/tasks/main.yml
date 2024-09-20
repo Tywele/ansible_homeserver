@@ -1,101 +1,19 @@
-- name: set hostname
-  ansible.builtin.hostname:
-    name: "{{ hostname }}"
+- name: Basic
+  ansible.builtin.import_tasks:
+    file: basic.yml
 
-- name: change configuration for DNF
-  ansible.builtin.blockinfile:
-    path: /etc/dnf/dnf.conf
-    block: |
-      max_parallel_downloads=10
-      fastestmirror=True
-    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+- name: Packages
+  ansible.builtin.import_tasks:
+    file: packages.yml
 
-- name: update packages
-  ansible.builtin.dnf:
-    name: "*"
-    state: latest
+- name: SSH
+  ansible.builtin.import_tasks:
+    file: ssh.yml
 
-- name: install packages
-  ansible.builtin.dnf:
-    name: "{{ packages }}"
-    state: latest
+- name: Greeting
+  ansible.builtin.import_tasks:
+    file: greeting.yml
 
-- name: check for core package updates
-  ansible.builtin.command: dnf needs-restarting -r
-  register: needs_restarting
-  failed_when: false
-  changed_when: false
-
-- name: reboot
-  ansible.builtin.reboot:
-    reboot_timeout: 600
-    connect_timeout: 600
-    msg: "rebooting to apply core package updates"
-  when: needs_restarting.rc != 0
-
-- name: create SSH config
-  ansible.builtin.copy:
-    src: ssh_config
-    dest: "/home/{{ username }}/.ssh/config"
-    owner: "{{ username}}"
-    group: "{{ username }}"
-    mode: 0644
-  notify: restart sshd
-
-- name: disable SSH password auth
-  ansible.builtin.lineinfile:
-    dest: /etc/ssh/sshd_config
-    regexp: "^#PasswordAuthentication yes"
-    line: "PasswordAuthentication no"
-  notify: restart sshd
-
-- name: disable root login
-  ansible.builtin.lineinfile:
-    dest: /etc/ssh/sshd_config
-    regexp: "^#PermitRootLogin yes"
-    line: "PermitRootLogin no"
-  notify: restart sshd
-
-- name: change SSH port
-  ansible.builtin.lineinfile:
-    dest: /etc/ssh/sshd_config
-    regexp: "^#Port 22"
-    line: "Port {{ ssh_port }}"
-  notify: restart sshd
-
-- name: open SSH port
-  ansible.builtin.firewalld:
-    port: "{{ ssh_port }}/tcp"
-    permanent: yes
-    state: enabled
-    immediate: true
-
-- name: inform SELinux about new SSH port
-  community.general.seport:
-    ports: "{{ ssh_port }}"
-    proto: tcp
-    setype: ssh_port_t
-    state: present
-
-- name: copy hyfetch config file
-  ansible.builtin.copy:
-    src: hyfetch.json
-    dest: "/home/{{ username }}/.config/hyfetch.json"
-    owner: "{{ username }}"
-    group: "{{ username }}"
-    mode: 0644
-
-- name: copy message of the day script
-  ansible.builtin.copy:
-    src: motd.sh
-    dest: /etc/profile.d/motd.sh
-    owner: root
-    group: root
-    mode: 0755
-
-- name: generate ssh keypair
-  ansible.builtin.openssh_keypair:
-    path: "/home/{{ username }}/.ssh/id_ed25519"
-    type: ed25519
-    owner: "{{ username }}"
-    group: "{{ username }}"
+- name: Mail
+  ansible.builtin.import_tasks:
+    file: mail.yml

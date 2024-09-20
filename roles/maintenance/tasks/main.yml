@@ -1,80 +1,19 @@
-- name: create job for short SMART test
-  ansible.builtin.cron:
-    name: "daily SMART test short {{ item }}"
-    special_time: "daily"
-    job: "smartctl -t short {{ item }}"
-    state: present
-    user: root
-  loop:
-    - "{{ nvme_device }}"
-    - "{{ hdd_device1 }}"
-    - "{{ hdd_device2 }}"
+- name: SMART
+  ansible.builtin.import_tasks:
+    file: smart.yml
 
-- name: create job for long SMART test
-  ansible.builtin.cron:
-    name: "weekly SMART test long {{ item }}"
-    special_time: "weekly"
-    job: "smartctl -t long {{ item }}"
-    state: present
-    user: root
-  loop:
-    - "{{ nvme_device }}"
-    - "{{ hdd_device1 }}"
-    - "{{ hdd_device2 }}"
+- name: Snapshots
+  ansible.builtin.import_tasks:
+    file: snapshots.yml
 
-- name: add btrfs subvolumes for snapshots
-  community.general.btrfs_subvolume:
-    name: /snapshots
-    state: present
-    filesystem_label: "{{ item }}"
-  loop:
-    - "{{ nvme_filesystem_label }}"
-    - "{{ hdd_filesystem_label }}"
+- name: Backup
+  ansible.builtin.import_tasks:
+    file: backup.yml
 
-- name: create jobs for daily btrfs snapshots
-  ansible.builtin.cron:
-    name: "daily btrfs snapshot of {{ item.filesystem_label }}"
-    special_time: "daily"
-    job: "btrfs subvolume snapshot -r {{ item.mount_point }} {{ item.mount_point }}/snapshots/{{ item.filesystem_label }}-$(date +\"\\%Y-\\%m-\\%d\")"
-    state: present
-    user: root
-  loop:
-    - { mount_point: "{{ nvme_mount_point }}", filesystem_label: "{{ nvme_filesystem_label }}" }
-    - { mount_point: "{{ hdd_mount_point }}", filesystem_label: "{{ hdd_filesystem_label }}" }
+- name: Scrub
+  ansible.builtin.import_tasks:
+    file: scrub.yml
 
-- name: create jobs for deleting snapshots older than 30 days
-  ansible.builtin.cron:
-    name: "daily cleanup of old snapshots for {{ item.filesystem_label }} (> 30 days)"
-    special_time: "daily"
-    job: "find {{ item.mount_point }}/snapshots -maxdepth 1 -mindepth 1 -type d -mtime +30 -exec btrfs subvolume delete {} \\;"
-    state: present
-    user: root
-  loop:
-    - { mount_point: "{{ nvme_mount_point }}", filesystem_label: "{{ nvme_filesystem_label }}" }
-    - { mount_point: "{{ hdd_mount_point }}", filesystem_label: "{{ hdd_filesystem_label }}" }
-
-- name: create jobs for weekly rsync
-  ansible.builtin.cron:
-    name: "weekly rsync of {{ item.mount_point }}"
-    special_time: "weekly"
-    job: "rsync -rlvzqt --delete --stats --progress --numeric-ids --log-file=/var/log/rsync-{{ item.filesystem_label }}.log -e 'ssh -p23 -i /home/{{ username }}/.ssh/id_ed25519' {{ item.mount_point }} {{ storage_box_address }}:{{ item.target_directory }}"
-    state: present
-    user: root
-  loop:
-    - { mount_point: "{{ nvme_mount_point }}", filesystem_label: "{{ nvme_filesystem_label }}", target_directory: "/home" }
-    - { mount_point: "{{ hdd_mount_point }}/actual-budget", filesystem_label: "{{ hdd_filesystem_label }}-actual-budget", target_directory: "/home/{{ hdd_mount_point_name }}" }
-    - { mount_point: "{{ hdd_mount_point }}/immich", filesystem_label: "{{ hdd_filesystem_label }}-immich", target_directory: "/home/{{ hdd_mount_point_name }}" }
-    - { mount_point: "{{ hdd_mount_point }}/komga", filesystem_label: "{{ hdd_filesystem_label }}-komga", target_directory: "/home/{{ hdd_mount_point_name }}" }
-    - { mount_point: "{{ hdd_mount_point }}/nextcloud", filesystem_label: "{{ hdd_filesystem_label }}-nextcloud", target_directory: "/home/{{ hdd_mount_point_name }}" }
-
-- name: create jobs for monthly btrfs scrub
-  ansible.builtin.cron:
-    name: "monthly btrfs scrub of {{ item }}"
-    special_time: "monthly"
-    job: "btrfs scrub start {{ item }}"
-    state: present
-    user: root
-  loop:
-    - "/" 
-    - "{{ nvme_mount_point }}"
-    - "{{ hdd_mount_point }}"
+- name: Updates
+  ansible.builtin.import_tasks:
+    file: updates.yml

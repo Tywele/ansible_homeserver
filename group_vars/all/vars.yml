@@ -4,10 +4,13 @@ packages:
   - nano
   - htop
   - dnf-plugins-core
+  - dnf-automatic
   - smartmontools
   - rsync
   - hyfetch
   - borgbackup
+  - postfix
+  - mailx
 
 docker_packages:
   - docker-ce

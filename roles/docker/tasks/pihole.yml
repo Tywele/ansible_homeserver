@@ -4,7 +4,7 @@
     state: present
     filesystem_label: "{{ nvme_filesystem_label }}" 
 
-- name: copy resolved.conf
+- name: copy systemd-resolved config file
   ansible.builtin.copy:
     src: resolved.conf
     dest: /etc/systemd/resolved.conf

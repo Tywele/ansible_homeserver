@@ -1,0 +1,30 @@
+- name: add btrfs subvolumes for snapshots
+  community.general.btrfs_subvolume:
+    name: /snapshots
+    state: present
+    filesystem_label: "{{ item }}"
+  loop:
+    - "{{ nvme_filesystem_label }}"
+    - "{{ hdd_filesystem_label }}"
+
+- name: create jobs for daily btrfs snapshots
+  ansible.builtin.cron:
+    name: "daily btrfs snapshot of {{ item.filesystem_label }}"
+    special_time: "daily"
+    job: "btrfs subvolume snapshot -r {{ item.mount_point }} {{ item.mount_point }}/snapshots/{{ item.filesystem_label }}-$(date +\"\\%Y-\\%m-\\%d\")"
+    state: present
+    user: root
+  loop:
+    - { mount_point: "{{ nvme_mount_point }}", filesystem_label: "{{ nvme_filesystem_label }}" }
+    - { mount_point: "{{ hdd_mount_point }}", filesystem_label: "{{ hdd_filesystem_label }}" }
+
+- name: create jobs for deleting snapshots older than 30 days
+  ansible.builtin.cron:
+    name: "daily cleanup of old snapshots for {{ item.filesystem_label }} (> 30 days)"
+    special_time: "daily"
+    job: "find {{ item.mount_point }}/snapshots -maxdepth 1 -mindepth 1 -type d -mtime +30 -exec btrfs subvolume delete {} \\;"
+    state: present
+    user: root
+  loop:
+    - { mount_point: "{{ nvme_mount_point }}", filesystem_label: "{{ nvme_filesystem_label }}" }
+    - { mount_point: "{{ hdd_mount_point }}", filesystem_label: "{{ hdd_filesystem_label }}" }

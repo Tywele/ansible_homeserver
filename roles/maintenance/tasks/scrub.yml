@@ -1,0 +1,11 @@
+- name: create jobs for monthly btrfs scrub
+  ansible.builtin.cron:
+    name: "monthly btrfs scrub of {{ item }}"
+    special_time: "monthly"
+    job: "btrfs scrub start {{ item }}"
+    state: present
+    user: root
+  loop:
+    - "/" 
+    - "{{ nvme_mount_point }}"
+    - "{{ hdd_mount_point }}"

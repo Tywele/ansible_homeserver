@@ -1,0 +1,13 @@
+- name: create jobs for weekly rsync
+  ansible.builtin.cron:
+    name: "weekly rsync of {{ item.mount_point }}"
+    special_time: "weekly"
+    job: "rsync -rlvzqt --delete --stats --progress --numeric-ids --log-file=/var/log/rsync-{{ item.filesystem_label }}.log -e 'ssh -p23 -i /home/{{ username }}/.ssh/id_ed25519' {{ item.mount_point }} {{ storage_box_address }}:{{ item.target_directory }}"
+    state: present
+    user: root
+  loop:
+    - { mount_point: "{{ nvme_mount_point }}", filesystem_label: "{{ nvme_filesystem_label }}", target_directory: "/home" }
+    - { mount_point: "{{ hdd_mount_point }}/actual-budget", filesystem_label: "{{ hdd_filesystem_label }}-actual-budget", target_directory: "/home/{{ hdd_mount_point_name }}" }
+    - { mount_point: "{{ hdd_mount_point }}/immich", filesystem_label: "{{ hdd_filesystem_label }}-immich", target_directory: "/home/{{ hdd_mount_point_name }}" }
+    - { mount_point: "{{ hdd_mount_point }}/komga", filesystem_label: "{{ hdd_filesystem_label }}-komga", target_directory: "/home/{{ hdd_mount_point_name }}" }
+    - { mount_point: "{{ hdd_mount_point }}/nextcloud", filesystem_label: "{{ hdd_filesystem_label }}-nextcloud", target_directory: "/home/{{ hdd_mount_point_name }}" }
