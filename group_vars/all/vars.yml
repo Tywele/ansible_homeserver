@@ -11,6 +11,7 @@ packages:
   - borgbackup
   - postfix
   - mailx
+  - neovim
 
 docker_packages:
   - docker-ce

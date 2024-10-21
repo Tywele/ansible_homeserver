@@ -7,7 +7,7 @@
 - name: deploy FreshRSS
   community.docker.docker_container:
     name: freshrss
-    image: freshrss/freshrss:latest
+    image: freshrss/freshrss:edge
     restart_policy: unless-stopped
     volumes:
       - "{{ nvme_mount_point }}/freshrss/data:/var/www/FreshRSS/data"

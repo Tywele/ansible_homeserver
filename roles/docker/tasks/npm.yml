@@ -4,19 +4,10 @@
     state: present
     filesystem_label: "{{ nvme_filesystem_label }}"
 
-# - name: copy HSTS config
-#   ansible.builtin.copy:
-#     src: _hsts.conf
-#     dest: "{{ nvme_mount_point }}/nginx-proxy-manager/_hsts.conf"
-#     owner: root
-#     group: root
-#     mode: 0644
-
 - name: create Nginx Proxy Manager network
   community.docker.docker_network:
     name: npm-network
     state: present
-    internal: no
 
 - name: deploy Nginx Proxy Manager
   community.docker.docker_container:
@@ -25,7 +16,6 @@
     restart_policy: unless-stopped
     volumes:
       - "{{ nvme_mount_point }}/nginx-proxy-manager/data:/data"
-      # - "{{ nvme_mount_point }}/nginx-proxy-manager/_hsts.conf:/app/templates/_hsts.conf:ro"
       - "{{ nvme_mount_point }}/nginx-proxy-manager/etc/letsencrypt:/etc/letsencrypt"
     ports:
       - "80:80"
@@ -33,5 +23,3 @@
       - "443:443"
     networks:
       - name: npm-network
-    # labels:
-    #   com.centurylinklabs.watchtower.monitor-only: "true"

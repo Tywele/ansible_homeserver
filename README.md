@@ -54,7 +54,9 @@ For maintenance I have written tasks to create cron jobs that:
 - do monthly scrubs of all filesystems
 - rsyncs `apps` and `data` filesystems to a storage box
 - executes short SMART tests daily
-- executes long SMART tests weekly 
+- executes long SMART tests weekly
+- automatic updates are enabled and if necessary the server reboots automatically (for example for kernel updates)
+- send an email with the updated packages
 
 ## Security
 Hardening methods used so far are:

@@ -1,4 +1,4 @@
-- name: check if docker repository is already added
+- name: check if docker repository is added
   ansible.builtin.shell: dnf repolist -v | grep -q docker-ce-stable
   register: docker_repo_check
   changed_when: false
@@ -13,7 +13,7 @@
     name: "{{ docker_packages }}"
     state: latest
 
-- name: start docker service
+- name: enable docker service
   ansible.builtin.service:
     name: docker
     state: started

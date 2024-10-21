@@ -62,7 +62,7 @@
 - name: deploy Immich-Machine-Learning
   community.docker.docker_container:
     name: immich-machine-learning
-    image: ghcr.io/immich-app/immich-machine-learning:v1.115.0
+    image: ghcr.io/immich-app/immich-machine-learning:v1.118.2
     restart_policy: always
     volumes:
       - "{{ nvme_mount_point }}/immich/model-cache:/cache"
@@ -81,13 +81,13 @@
 - name: deploy Immich-Server
   community.docker.docker_container:
     name: immich-server
-    image: ghcr.io/immich-app/immich-server:v1.115.0
+    image: ghcr.io/immich-app/immich-server:v1.118.2
     restart_policy: always
     volumes:
       - "{{ hdd_mount_point}}/immich/library:/usr/src/app/upload"
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - "2283:3001"
+      - "2283:2283"
     env:
       DB_DATABASE_NAME: "{{ immich_postgres_db_name }}"
       DB_USERNAME: "{{ immich_postgres_db_user }}"
