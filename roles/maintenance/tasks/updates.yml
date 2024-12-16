@@ -9,5 +9,5 @@
 - name: enable dnf-automatic service
   ansible.builtin.service:
     name: dnf-automatic.timer
-    enabled: true
-    state: started
+    enabled: false
+    state: stopped

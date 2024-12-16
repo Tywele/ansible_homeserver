@@ -1,7 +1,7 @@
-- name: create jobs for weekly rsync
+- name: create jobs for daily rsync
   ansible.builtin.cron:
-    name: "weekly rsync of {{ item.mount_point }}"
-    special_time: "weekly"
+    name: "daily rsync of {{ item.mount_point }}"
+    special_time: "daily"
     job: "rsync -rlvzqt --delete --stats --progress --numeric-ids --log-file=/var/log/rsync-{{ item.filesystem_label }}.log -e 'ssh -p23 -i /home/{{ username }}/.ssh/id_ed25519' {{ item.mount_point }} {{ storage_box_address }}:{{ item.target_directory }}"
     state: present
     user: root

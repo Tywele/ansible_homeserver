@@ -6,7 +6,7 @@
     state: present
     user: root
   loop:
-    - "{{ nvme_device }}"
+    - "{{ nvme_device_broadcast_namespace }}"
     - "{{ hdd_device1 }}"
     - "{{ hdd_device2 }}"
 
@@ -18,6 +18,6 @@
     state: present
     user: root
   loop:
-    - "{{ nvme_device }}"
+    - "{{ nvme_device_broadcast_namespace }}"
     - "{{ hdd_device1 }}"
     - "{{ hdd_device2 }}"

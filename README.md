@@ -16,9 +16,9 @@ The following services will be setup with this playbook:
 - [Nextcloud](https://nextcloud.com/)
 - [Nginx Proxy Manager](https://nginxproxymanager.com/)
 - [PaperlessNGX](https://github.com/paperless-ngx/paperless-ngx)
-- [Photon](https://github.com/Xyphyn/Photon)
+<!-- - [Photon](https://github.com/Xyphyn/Photon) -->
 - [Pi-Hole](https://github.com/pi-hole/docker-pi-hole/)
-- [Syncthing](https://syncthing.net/)
+<!-- - [Syncthing](https://syncthing.net/) -->
 - [Uptime Kuma](https://github.com/louislam/uptime-kuma)
 - [Watchtower](https://containrrr.dev/watchtower/)
 

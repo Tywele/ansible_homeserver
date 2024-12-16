@@ -17,6 +17,12 @@
       - "{{ hdd_mount_point }}:{{ hdd_mount_point }}"
       - "{{ nvme_mount_point }}/homepage/config:/app/config"
 
+- name: create Homepage config directory
+  ansible.builtin.file:
+    path: "{{ nvme_mount_point }}/homepage/config"
+    state: directory
+    mode: 0755
+
 - name: copy Homepage config files
   ansible.builtin.copy:
     src: "{{ item.src }}"

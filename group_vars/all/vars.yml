@@ -21,6 +21,7 @@ docker_packages:
   - docker-compose-plugin
 
 nvme_device: /dev/nvme0n1
+nvme_device_broadcast_namespace: /dev/nvme0
 hdd_device1: /dev/sdb
 hdd_device2: /dev/sdc
 

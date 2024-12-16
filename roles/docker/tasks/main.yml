@@ -14,10 +14,6 @@
   ansible.builtin.import_tasks:
     file: komga.yml
 
-- name: Syncthing
-  ansible.builtin.import_tasks:
-    file: syncthing.yml
-
 - name: Actual Budget
   ansible.builtin.import_tasks:
     file: actual.yml
@@ -38,10 +34,6 @@
   ansible.builtin.import_tasks:
     file: homepage.yml
 
-- name: Photon
-  ansible.builtin.import_tasks:
-    file: photon.yml
-
 - name: Home Assistant
   ansible.builtin.import_tasks:
     file: homeassistant.yml
@@ -61,3 +53,7 @@
 - name: Paperless
   ansible.builtin.import_tasks:
     file: paperless.yml
+
+- name: dufs
+  ansible.builtin.import_tasks:
+    file: dufs.yml

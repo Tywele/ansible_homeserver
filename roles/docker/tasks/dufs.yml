@@ -1,0 +1,16 @@
+- name: add btrfs subvolumes for dufs
+  community.general.btrfs_subvolume:
+    name: /dufs
+    state: present
+    filesystem_label: "{{ hdd_filesystem_label }}"
+
+- name: deploy dufs
+  community.docker.docker_container:
+    name: dufs
+    image: sigoden/dufs
+    restart_policy: unless-stopped
+    command: "/data -A -a {{ username }}:{{ dufs_password }}@/:rw"
+    volumes:
+      - "{{ hdd_mount_point }}/dufs/data:/data"
+    ports:
+      - "5000:5000"

@@ -17,4 +17,4 @@
   ansible.builtin.service:
     name: docker
     state: started
-    enabled: yes
+    enabled: true
